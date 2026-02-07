@@ -396,10 +396,157 @@
         function checkLegalAlerts() { const container = document.getElementById('legal-alerts'); container.innerHTML = ''; buses.forEach(b => { [{t:'STNK', d:new Date(b.stnk)}, {t:'KIR', d:new Date(b.kir)}].forEach(a => { if(!a.d || isNaN(a.d)) return; const diff = Math.ceil((a.d - new Date()) / (1000 * 60 * 60 * 24)); if(diff <= 30) { const col = diff <= 0 ? 'var(--danger)' : '#856404'; container.innerHTML += `<div style="padding:10px; background:white; border-left:5px solid ${col}; margin-bottom:10px; font-size:0.8rem;">⚠️ <b>${b.name}</b>: Pajak ${a.t} ${diff <= 0 ? 'Mati!' : 'sisa ' + diff + ' hr'}</div>`; } }); }); }
 
         function printInvoice(id) {
-            const s = schedules.find(x => x.id == id), b = buses.find(x => x.id == s.busId); const sisa = s.price - s.dp; const pWin = window.open('', '_blank');
-            pWin.document.write(`<html><head><title>Kwitansi_${s.cust}</title><style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');body{font-family:'Inter',sans-serif;padding:20px;color:#333;background:#f0f0f0}.paper{background:white;width:210mm;min-height:148mm;margin:auto;padding:30px;box-sizing:border-box;border-radius:8px;box-shadow:0 0 10px rgba(0,0,0,0.1);position:relative;overflow:hidden}.watermark{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);font-size:80px;font-weight:bold;color:rgba(0,128,0,0.1);border:10px solid rgba(0,128,0,0.1);padding:20px;border-radius:20px;pointer-events:none;z-index:0;text-transform:uppercase}.header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #005a9c;padding-bottom:15px}.brand h1{margin:0;color:#005a9c;font-size:24px}.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin:25px 0;font-size:13px}.info-box h4{margin:0 0 8px 0;color:#005a9c;text-transform:uppercase;border-bottom:1px solid #eee;padding-bottom:5px}.info-box p{margin:4px 0;display:flex}.info-box span{width:100px;color:#777;flex-shrink:0}table{width:100%;border-collapse:collapse;margin:20px 0;font-size:14px;z-index:1;position:relative}th{background:#005a9c;color:white;padding:12px;text-align:left}td{padding:12px;border-bottom:1px solid #eee}.footer-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:20px;margin-top:20px}.totals{background:#f9f9f9;padding:15px;border-radius:5px}.total-row{display:flex;justify-content:space-between;padding:5px 0;font-size:14px}.grand-total{border-top:2px solid #005a9c;margin-top:10px;padding-top:10px;font-weight:bold;font-size:18px;color:#005a9c}.signature-area{display:flex;justify-content:space-between;margin-top:40px;text-align:center;font-size:13px}.sig-box{width:200px}.sig-space{height:70px}@media print{body{background:white;padding:0}.paper{box-shadow:none;border:none;width:100%}button{display:none}}</style></head><body><div class="paper">${s.status==='Lunas'?'<div class="watermark">LUNAS</div>':''}${s.status==='DP'?'<div class="watermark" style="color:rgba(255,165,0,0.1);border-color:rgba(255,165,0,0.1)">DP PAID</div>':''}<div class="header"><div class="brand"><h1>TISAL BUS MANAGER</h1><p>Jl. Raya Krajan - Semin Km.3 Krajan, Weru, Sukoharjo</p></div><div class="inv-title"><h2>KWITANSI</h2><p>#INV/${s.id}</p><p>${new Date(s.date).toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'})}</p></div></div><div class="info-grid"><div class="info-box"><h4>Informasi Penyewa</h4><p><span>Nama</span>: <b>${s.cust}</b></p><p><span>Telepon</span>: ${s.phone}</p><p><span>Alamat</span>: ${s.addr||'-'}</p></div><div class="info-box"><h4>Detail Perjalanan</h4><p><span>Tujuan</span>: <b>${s.trip}</b></p><p><span>Armada</span>: ${b?.name||'-'}</p></div></div><table><thead><tr><th>Deskripsi</th><th style="text-align:right">Harga</th></tr></thead><tbody><tr><td><b>Sewa Bus Pariwisata</b><br><small>Tgl: ${s.date}</small></td><td style="text-align:right"><b>${formatRp(s.price)}</b></td></tr></tbody></table><div class="footer-grid"><div class="terms"><b>S&K:</b><ol><li>DP Min 30%.</li><li>Lunas H-3.</li></ol></div><div class="totals"><div class="total-row"><span>Total</span><span>${formatRp(s.price)}</span></div><div class="total-row" style="color:green"><span>Bayar</span><span>${formatRp(s.dp)}</span></div><div class="total-row grand-total"><span>${sisa>0?'SISA':'KETERANGAN'}</span><span>${sisa>0?formatRp(sisa):'LUNAS'}</span></div></div></div><div class="signature-area"><div class="sig-box"><p>Hormat Kami,</p><div class="sig-space"></div><p><b>( ___________ )</b></p></div><div class="sig-box"><p>Penyewa,</p><div class="sig-space"></div><p><b>( ${s.cust} )</b></p></div></div></div><script>window.onload=function(){setTimeout(()=>{window.print();},500);}<\/script></body></html>`);
-            pWin.document.close();
-        }
+    const s = schedules.find(x => x.id == id), b = buses.find(x => x.id == s.busId);
+    const sisa = s.price - s.dp;
+    const pWin = window.open('', '_blank');
+    
+    pWin.document.write(`
+    <html>
+    <head>
+        <title>Kwitansi_${s.cust}_${s.id}</title>
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+            body { font-family: 'Inter', sans-serif; padding: 20px; color: #333; background: #f0f0f0; }
+            .paper { 
+                background: white; width: 210mm; min-height: 148mm; margin: auto; padding: 30px; 
+                box-sizing: border-box; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1);
+                position: relative; overflow: hidden;
+            }
+            /* Watermark Status */
+            .watermark { 
+                position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg);
+                font-size: 80px; font-weight: bold; color: rgba(0, 128, 0, 0.1); 
+                border: 10px solid rgba(0, 128, 0, 0.1); padding: 20px; border-radius: 20px;
+                pointer-events: none; z-index: 0; text-transform: uppercase;
+            }
+            .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #005a9c; padding-bottom: 15px; }
+            .brand h1 { margin: 0; color: #005a9c; font-size: 24px; letter-spacing: 1px; }
+            .brand p { margin: 2px 0; font-size: 12px; color: #666; }
+            .inv-title { text-align: right; }
+            .inv-title h2 { margin: 0; font-size: 28px; color: #444; }
+            .inv-title p { margin: 2px 0; font-size: 14px; font-weight: bold; }
+
+            .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin: 25px 0; font-size: 13px; }
+            .info-box h4 { margin: 0 0 8px 0; color: #005a9c; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+            .info-box p { margin: 4px 0; display: flex; }
+            .info-box span { width: 100px; color: #777; flex-shrink: 0; }
+
+            table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; z-index: 1; position: relative; }
+            th { background: #005a9c; color: white; padding: 12px; text-align: left; }
+            td { padding: 12px; border-bottom: 1px solid #eee; }
+            
+            .footer-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 20px; margin-top: 20px; }
+            .terms { font-size: 11px; color: #777; border: 1px dashed #ccc; padding: 10px; border-radius: 5px; }
+            .totals { background: #f9f9f9; padding: 15px; border-radius: 5px; }
+            .total-row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 14px; }
+            .grand-total { border-top: 2px solid #005a9c; margin-top: 10px; padding-top: 10px; font-weight: bold; font-size: 18px; color: #005a9c; }
+
+            .signature-area { display: flex; justify-content: space-between; margin-top: 40px; text-align: center; font-size: 13px; }
+            .sig-box { width: 200px; }
+            .sig-space { height: 70px; }
+
+            @media print {
+                body { background: white; padding: 0; }
+                .paper { box-shadow: none; border: none; width: 100%; }
+                button { display: none; }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="paper">
+            ${s.status === 'Lunas' ? '<div class="watermark">LUNAS</div>' : ''}
+            ${s.status === 'DP' ? '<div class="watermark" style="color:rgba(255,165,0,0.1); border-color:rgba(255,165,0,0.1)">DP PAID</div>' : ''}
+            
+            <div class="header">
+                <div class="brand">
+                    <h1>BUS MANAGER PRO</h1>
+                    <p>Jl. Raya Transportasi No. 123, Indonesia</p>
+                    <p>Telp: 0812-3456-7890 | Email: admin@buspro.com</p>
+                </div>
+                <div class="inv-title">
+                    <h2>KWITANSI</h2>
+                    <p>#INV/${s.id}</p>
+                    <p>Tgl: ${new Date(s.date).toLocaleDateString('id-ID', {day:'2-digit', month:'long', year:'numeric'})}</p>
+                </div>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-box">
+                    <h4>Informasi Penyewa</h4>
+                    <p><span>Nama</span>: <b>${s.cust}</b></p>
+                    <p><span>Telepon</span>: ${s.phone}</p>
+                    <p><span>Alamat</span>: ${s.addr || '-'}</p>
+                </div>
+                <div class="info-box">
+                    <h4>Detail Perjalanan</h4>
+                    <p><span>Tujuan</span>: <b>${s.trip}</b></p>
+                    <p><span>Armada</span>: ${b?.name || '-'} (${b?.plate || '-'})</p>
+                    <p><span>Penjemputan</span>: ${s.pickup || '-'}</p>
+                </div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Deskripsi Layanan</th>
+                        <th style="text-align:right">Harga Sewa</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <b>Sewa Bus Pariwisata</b><br>
+                            <small>Keberangkatan tanggal: ${s.date}</small>
+                        </td>
+                        <td style="text-align:right"><b>${formatRp(s.price)}</b></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="footer-grid">
+                <div class="terms">
+                    <b>Syarat & Ketentuan:</b>
+                    <ol style="padding-left:15px; margin:5px 0;">
+                        <li>Pembayaran DP minimal 30% dari total harga.</li>
+                        <li>Pelunasan maksimal H-3 sebelum keberangkatan.</li>
+                        <li>Pembatalan H-7 dikenakan denda 50% dari DP.</li>
+                        <li>Kehilangan barang pribadi bukan tanggung jawab kami.</li>
+                    </ol>
+                </div>
+                <div class="totals">
+                    <div class="total-row"><span>Total Biaya</span><span>${formatRp(s.price)}</span></div>
+                    <div class="total-row" style="color:green"><span>Uang Masuk</span><span>${formatRp(s.dp)}</span></div>
+                    <div class="total-row grand-total">
+                        <span>${sisa > 0 ? 'SISA TAGIHAN' : 'KETERANGAN'}</span>
+                        <span>${sisa > 0 ? formatRp(sisa) : 'LUNAS'}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="signature-area">
+                <div class="sig-box">
+                    <p>Hormat Kami,</p>
+                    <div class="sig-space"></div>
+                    <p><b>( ________________ )</b><br>Admin Operasional</p>
+                </div>
+                <div class="sig-box">
+                    <p>Penyewa,</p>
+                    <div class="sig-space"></div>
+                    <p><b>( ${s.cust} )</b><br>Customer</p>
+                </div>
+            </div>
+        </div>
+        <script>
+            // Auto print saat dibuka
+            window.onload = function() {
+                setTimeout(() => { window.print(); }, 500);
+            }
+        <\/script>
+    </body>
+    </html>
+    `);
+    pWin.document.close();
+}
 
         function sendWA(id) {
             const s = schedules.find(x => x.id == id), b = buses.find(x => x.id == s.busId); const sisa = (parseInt(s.price) || 0) - (parseInt(s.dp) || 0); const statusTagihan = sisa > 0 ? `Sisa: *${formatRp(sisa)}*` : `*STATUS: LUNAS* ✅`;
@@ -424,3 +571,4 @@
     </script>
 </body>
 </html>
+
