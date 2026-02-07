@@ -157,7 +157,12 @@
             <div class="form-group"><label>Nama Trip / Tujuan</label><input type="text" id="f-trip" required></div>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                 <div class="form-group"><label>Tanggal Berangkat</label><input type="date" id="f-date" required onchange="openScheduleModal()"></div>
-                <div class="form-group"><label>Unit Bus</label><select id="f-bus" required></select></div>
+                <div class="form-group"><div class="form-group">
+    <label>Unit Bus (Ketik untuk cari)</label>
+    <input list="bus-options" id="f-bus-input" placeholder="Pilih atau Ketik Nama/Plat..." required onchange="syncBusId(this.value)" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+    <datalist id="bus-options"></datalist>
+    <input type="hidden" id="f-bus">
+</div></div>
             </div>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                 <div class="form-group"><label>Nama Pemesan</label><input type="text" id="f-cust" required></div>
@@ -363,14 +368,51 @@
             return `<div class="info-item" style="border-left-color: ${isUnpaidColumn ? 'var(--danger)' : 'var(--primary)'}"><div style="display:flex; justify-content:space-between; align-items:flex-start;"><strong>${s.trip}</strong><span class="badge ${badgeClass}">${s.status}</span></div><div class="detail-row"><span>📅 <b>Tgl:</b> ${s.date}</span><span>🚌 <b>Bus:</b> ${b?.name || '-'}</span><span style="display: flex; justify-content: space-between; width: 100%;"><span>👤 <b>Pemesan:</b> ${s.cust}</span><span style="color: var(--primary); font-weight: 500;">📞 ${s.phone}</span></span></div><div class="pickup-box">📍 <b>Jemput:</b> ${s.pickup || '-'}</div><div style="margin-top:10px; border-top:1px dashed #eee; padding-top:8px;"><div style="font-weight:bold; color:${sisa > 0 ? 'var(--danger)' : 'var(--success)'}">${sisa > 0 ? 'Sisa Tagihan: ' + formatRp(sisa) : 'SUDAH LUNAS'}</div></div><div style="display:flex; gap:5px; margin-top:10px; flex-wrap:wrap;"><button class="btn-orange" onclick="editSched(${s.id})">✏️ Edit</button><button class="btn-gray" onclick="printInvoice(${s.id})">📄 Kwitansi</button><button class="btn-green" onclick="sendWA(${s.id})">📱 WA</button><button class="btn-red" onclick="delSched(${s.id})">🗑️ Hapus</button></div></div>`;
         }
 
-        function openScheduleModal(date = '') {
-            const busSelect = document.getElementById('f-bus'); const dateInput = document.getElementById('f-date'); const editId = document.getElementById('edit-id').value;
+function openScheduleModal(date = '') {
+            const busList = document.getElementById('bus-options');
+            const busInput = document.getElementById('f-bus-input');
+            const dateInput = document.getElementById('f-date');
+            const editId = document.getElementById('edit-id').value;
+
             if (date) dateInput.value = date;
             const selectedDate = dateInput.value;
-            const usedBusIds = schedules.filter(s => s.date === selectedDate && s.id != editId).map(s => String(s.busId));
+
+            // Filter bus yang sudah dipakai agar tidak bentrok
+            const usedBusIds = schedules
+                .filter(s => s.date === selectedDate && s.id != editId)
+                .map(s => String(s.busId));
+
             const availableBuses = buses.filter(b => !usedBusIds.includes(String(b.id)));
-            busSelect.innerHTML = availableBuses.length === 0 ? '<option value="" disabled>❌ Semua sudah terbooking</option>' : availableBuses.map(b => `<option value="${b.id}">${b.name} (${b.plate})</option>`).join('');
+
+            // Isi daftar bus ke datalist
+            busList.innerHTML = availableBuses.map(b => 
+                `<option value="${b.name} (${b.plate})" data-id="${b.id}">`
+            ).join('');
+
+            // Logika jika sedang EDIT jadwal
+            if(editId) {
+                const currentSched = schedules.find(x => x.id == editId);
+                const b = buses.find(x => x.id == currentSched.busId);
+                if(b) {
+                    busInput.value = `${b.name} (${b.plate})`;
+                    document.getElementById('f-bus').value = b.id;
+                }
+            } else {
+                busInput.value = '';
+                document.getElementById('f-bus').value = '';
+            }
+
             document.getElementById('modal-form').style.display = 'block';
+        }
+
+        // Fungsi pembantu untuk mendapatkan ID bus dari teks yang diketik
+        function syncBusId(val) {
+            const options = document.querySelectorAll('#bus-options option');
+            let foundId = "";
+            options.forEach(opt => {
+                if(opt.value === val) foundId = opt.getAttribute('data-id');
+            });
+            document.getElementById('f-bus').value = foundId;
         }
 
         document.getElementById('schedule-form').onsubmit = (e) => {
