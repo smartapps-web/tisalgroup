@@ -556,19 +556,132 @@
         }
 
         function openExportModal() { document.getElementById('modal-export').style.display = 'block'; }
-        function processExport() {
-            const period = document.getElementById('export-period').value; if (!period) return alert("Pilih bulan!");
-            const fs = schedules.filter(s => s.date.startsWith(period)), fe = expenses.filter(e => e.date.startsWith(period));
-            let html = `<html xmlns:x="urn:schemas-microsoft-com:office:excel"><body><table border="1"><tr><th colspan="7">LAPORAN ${period}</th></tr><tr><th>Tgl</th><th>Trip</th><th>Customer</th><th>Bus</th><th>Harga</th><th>DP</th><th>Status</th></tr>`;
-            fs.forEach(s => { const b = buses.find(x => x.id == s.busId); html += `<tr><td>${s.date}</td><td>${s.trip}</td><td>${s.cust}</td><td>${b?.name}</td><td>${s.price}</td><td>${s.dp}</td><td>${s.status}</td></tr>`; });
-            html += `</table></body></html>`;
-            const blob = new Blob([html], { type: 'application/vnd.ms-excel' }); const url = URL.createObjectURL(blob);
-            const a = document.createElement("a"); a.href = url; a.download = `Laporan_${period}.xls`; a.click(); closeModal();
-        }
+                // --- KWITANSI ---
+
+function processExport() {
+    const period = document.getElementById('export-period').value;
+    if (!period) return alert("Pilih periode bulan terlebih dahulu!");
+
+    const [year, month] = period.split('-');
+    const monthName = new Date(year, month - 1).toLocaleString('id-ID', { month: 'long', year: 'numeric' });
+
+    const filteredSchedules = schedules.filter(s => s.date.startsWith(period));
+    const filteredExpenses = expenses.filter(e => e.date.startsWith(period));
+
+    // Hitung Ringkasan
+    const totalOmzet = filteredSchedules.reduce((a, b) => a + (parseInt(b.price) || 0), 0);
+    const totalMasuk = filteredSchedules.reduce((a, b) => a + (parseInt(b.dp) || 0), 0);
+    const totalSisa = totalOmzet - totalMasuk;
+    const totalKeluar = filteredExpenses.reduce((a, b) => a + (parseInt(b.amount) || 0), 0);
+    const labaBersih = totalMasuk - totalKeluar;
+
+    // Template HTML untuk Excel dengan Style Warna
+    let html = `
+    <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+    <head><meta charset="utf-8"></head>
+    <body>
+        <style>
+            .title { font-size: 18pt; font-weight: bold; text-align: center; color: #005a9c; }
+            .subtitle { font-size: 12pt; text-align: center; margin-bottom: 20px; }
+            table { border-collapse: collapse; width: 100%; }
+            th { background-color: #005a9c; color: #ffffff; border: 1px solid #000; padding: 5px; }
+            td { border: 1px solid #ccc; padding: 5px; }
+            .header-sec { background-color: #e2efda; font-weight: bold; }
+            .money { text-align: right; }
+            .summary-table td { font-weight: bold; border: 2px solid #000; }
+            .bg-blue { background-color: #ddeeef; }
+            .bg-red { background-color: #fce4d6; color: #c00000; }
+            .bg-green { background-color: #e2efda; color: #375623; }
+        </style>
+
+        <div class="title">LAPORAN BULANAN BUS MANAGER PRO</div>
+        <div class="subtitle">Periode: ${monthName}</div>
+
+        <h3>1. Ringkasan Keuangan</h3>
+        <table class="summary-table">
+            <tr><td width="200">Total Omzet (Target)</td><td class="money">${formatRp(totalOmzet)}</td></tr>
+            <tr><td>Total Cash Masuk</td><td class="money bg-green">${formatRp(totalMasuk)}</td></tr>
+            <tr><td>Total Piutang (Sisa)</td><td class="money bg-red">${formatRp(totalSisa)}</td></tr>
+            <tr><td>Total Biaya Operasional</td><td class="money" style="color:#777;">${formatRp(totalKeluar)}</td></tr>
+            <tr style="font-size:14pt; background-color: #fff2cc;"><td>LABA BERSIH (Cash - Biaya)</td><td class="money">${formatRp(labaBersih)}</td></tr>
+        </table>
+
+        <br>
+        <h3>2. Detail Jadwal & Pendapatan</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Tanggal</th>
+                    <th>Tujuan / Trip</th>
+                    <th>Pelanggan</th>
+                    <th>Unit Bus</th>
+                    <th>Total Harga</th>
+                    <th>DP / Masuk</th>
+                    <th>Sisa Tagihan</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${filteredSchedules.map(s => {
+                    const b = buses.find(x => x.id == s.busId);
+                    const sisa = s.price - s.dp;
+                    return `
+                    <tr>
+                        <td>${s.date}</td>
+                        <td>${s.trip}</td>
+                        <td>${s.cust}</td>
+                        <td>${b?.name || '-'}</td>
+                        <td class="money">${s.price}</td>
+                        <td class="money">${s.dp}</td>
+                        <td class="money" style="${sisa > 0 ? 'color:red' : ''}">${sisa}</td>
+                        <td>${s.status}</td>
+                    </tr>`;
+                }).join('')}
+            </tbody>
+        </table>
+
+        <br>
+        <h3>3. Detail Pengeluaran Operasional</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Tanggal</th>
+                    <th>Unit Terkait</th>
+                    <th>Kategori</th>
+                    <th>Keterangan</th>
+                    <th>Nominal (Rp)</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${filteredExpenses.map(e => {
+                    const b = buses.find(x => x.id == e.busId);
+                    return `
+                    <tr>
+                        <td>${e.date}</td>
+                        <td>${b?.name || 'Kantor'}</td>
+                        <td>${e.cat}</td>
+                        <td>${e.desc || '-'}</td>
+                        <td class="money">${e.amount}</td>
+                    </tr>`;
+                }).join('')}
+            </tbody>
+        </table>
+    </body>
+    </html>`;
+
+    // Proses Download sebagai file .xls
+    const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `Laporan_Lengkap_${period}.xls`;
+    link.click();
+    URL.revokeObjectURL(url);
+    closeModal();
+}
 
         function exportBackup() { const data = { buses, schedules, expenses }; const blob = new Blob([JSON.stringify(data)], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `backup_${Date.now()}.json`; a.click(); }
         function importData(e) { const reader = new FileReader(); reader.onload = (ev) => { const data = JSON.parse(ev.target.result); if(confirm('Restore data?')) { buses = data.buses || []; schedules = data.schedules || []; expenses = data.expenses || []; save(); renderAll(); } }; reader.readAsText(e.target.files[0]); }
     </script>
 </body>
 </html>
-
