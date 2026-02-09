@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TISAL BUS MANAGER v36.0</title>
+    <title>SMART BUS MANAGER v36.0</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -12,6 +12,15 @@
             --dark: #343a40; --shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         body { font-family: 'Inter', 'Segoe UI', sans-serif; margin: 0; background-color: #eef2f7; color: #333; line-height: 1.6; }
+        
+        /* --- KODE LOGIN (DITAMBAHKAN) --- */
+        #login-page { position: fixed; top:0; left:0; width:100%; height:100%; background: linear-gradient(135deg, var(--primary), #003d6b); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+        .login-card { background: white; padding: 35px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); width: 90%; max-width: 400px; text-align: center; }
+        .login-card select, .login-card input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; }
+        #main-app { display: none; }
+        .badge-user { background: #eef2f7; color: #555; border: 1px solid #ddd; font-size: 0.65rem; margin-top: 5px; }
+
+        /* --- CSS ASLI INDEX1 --- */
         .header { background: linear-gradient(135deg, var(--primary), #003d6b); color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow); position: sticky; top: 0; z-index: 1000; }
         .header h1 { margin: 0; font-size: 1.3rem; letter-spacing: 1px; }
         .container { display: grid; grid-template-columns: 1fr; gap: 20px; padding: 20px; max-width: 1600px; margin: auto; }
@@ -56,86 +65,140 @@
 </head>
 <body>
 
-    <header class="header">
-        <h1>🚍 TISAL BUS MANAGER <span style="font-weight:300">v36.0</span></h1>
-        <div style="display:flex; gap:8px;">
-            <button class="btn-green" onclick="openExportModal()">📊 Export Data</button>
-            <button class="btn-gray" onclick="exportBackup()">📥 Backup All</button>
-            <button class="btn-gray" onclick="document.getElementById('importFile').click()">📤 Restore</button>
-            <input type="file" id="importFile" style="display:none" onchange="importData(event)">
+    <div id="login-page">
+        <div class="login-card">
+            <h2 style="color: var(--primary);">🚍 Multi User Login</h2>
+            <select id="user-select">
+                <option value="Agus">Agus</option>
+                <option value="Rudi">Rudi</option>
+                <option value="Admin">Admin Utama</option>
+            </select>
+            <input type="password" id="user-pass" placeholder="Password" onkeypress="if(event.key === 'Enter') handleLogin()">
+            <button class="btn-blue" style="width: 100%; justify-content: center; padding: 12px;" onclick="handleLogin()">MASUK APLIKASI</button>
         </div>
-    </header>
+    </div>
 
-    <div class="container">
-        <div class="main-content">
-            <div id="legal-alerts"></div>
-            <div class="card">
-                <div style="display:flex; justify-content:space-between; margin-bottom:15px; align-items:center;">
-                    <div>
-                        <button class="btn-blue" onclick="changeMonth(-1)">◀</button>
-                        <span id="month-year" style="font-weight:bold; font-size:1.1rem; margin:0 10px; min-width:140px; display:inline-block; text-align:center;">Bulan</span>
-                        <button class="btn-blue" onclick="changeMonth(1)">▶</button>
+    <div id="main-app">
+        <header class="header">
+            <div>
+                <h1>🚍 SMART BUS MANAGER <span style="font-weight:300">v36.0</span></h1>
+                <small id="current-user-display" style="color: #fff; opacity: 0.9; font-weight: bold;"></small>
+            </div>
+            <div style="display:flex; gap:8px;">
+                <button class="btn-orange" onclick="openAccountSettings()">⚙️ Setting Akun</button>
+                <button class="btn-red" style="padding: 5px 10px;" onclick="handleLogout()">🚪 Log Out</button>
+                <button class="btn-green" onclick="openExportModal()">📊 Export Data</button>
+                <button class="btn-gray" onclick="exportBackup()">📥 Backup All</button>
+                <button class="btn-gray" onclick="document.getElementById('importFile').click()">📤 Restore</button>
+                <input type="file" id="importFile" style="display:none" onchange="importData(event)">
+            </div>
+        </header>
+
+        <div class="container">
+            <div class="main-content">
+                <div id="legal-alerts"></div>
+                <div class="card">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:15px; align-items:center;">
+                        <div>
+                            <button class="btn-blue" onclick="changeMonth(-1)">◀</button>
+                            <span id="month-year" style="font-weight:bold; font-size:1.1rem; margin:0 10px; min-width:140px; display:inline-block; text-align:center;">Bulan</span>
+                            <button class="btn-blue" onclick="changeMonth(1)">▶</button>
+                        </div>
+                        <div style="display:flex; gap:8px;">
+                            <button class="btn-orange" onclick="openExpenseModal()">💸 Biaya OPS</button>
+                            <button class="btn-gray" onclick="openFleetModal()">🚌 Armada</button>
+                            <button class="btn-blue" onclick="openScheduleModal()">🗓️ Jadwal</button>
+                        </div>
                     </div>
-                    <div style="display:flex; gap:8px;">
-                        <button class="btn-orange" onclick="openExpenseModal()">💸 Biaya OPS</button>
-                        <button class="btn-gray" onclick="openFleetModal()">🚌 Armada</button>
-                        <button class="btn-blue" onclick="openScheduleModal()">🗓️ Jadwal</button>
+                    <div class="calendar-grid" id="calendar-grid"></div>
+                </div>
+
+                <div class="card">
+                    <h3>💰 Ringkasan Keuangan (Bulan Ini)</h3>
+                    <div class="stat-grid">
+                        <div class="stat-card"><span>Omzet (Target)</span><strong id="st-omzet">0</strong></div>
+                        <div class="stat-card" style="background:#fff9f9; border: 1px solid #f5c6cb;"><span>Piutang (Sisa)</span><strong id="st-piutang" style="color:var(--danger)">0</strong></div>
+                        <div class="stat-card"><span>Masuk (Cash)</span><strong id="st-masuk">0</strong></div>
+                        <div class="stat-card"><span>Biaya Ops</span><strong id="st-keluar">0</strong></div>
+                        <div class="stat-card" style="background:#e7f3ff"><span>Laba Bersih</span><strong id="st-laba">0</strong></div>
+                    </div>
+                    <div class="chart-container"><canvas id="financeChart"></canvas></div>
+                </div>
+
+                <div class="card">
+                    <h3>📊 Detail Pengeluaran Operasional</h3>
+                    <div style="overflow-x:auto; max-height: 350px;">
+                        <table style="width:100%; border-collapse: collapse; font-size: 0.85rem;">
+                            <thead>
+                                <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6; position: sticky; top: 0;">
+                                    <th style="padding:10px; text-align:left;">Tgl</th>
+                                    <th style="padding:10px; text-align:left;">Unit</th>
+                                    <th style="padding:10px; text-align:left;">Kategori</th>
+                                    <th style="padding:10px; text-align:left;">Ket</th>
+                                    <th style="padding:10px; text-align:right;">Nominal</th>
+                                    <th style="padding:10px; text-align:center;">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="list-expenses-body"></tbody>
+                        </table>
+                    </div>
+
+                    <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="background: var(--primary); color: white; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-weight: bold; font-size: 0.8rem;">SB</div>
+                            <div>
+                                <div style="font-size: 0.8rem; font-weight: bold; color: var(--primary);">SMART BUS MANAGER v36.0</div>
+                                <div style="font-size: 0.7rem; color: #888;">Sistem Manajemen Operasional & Penjadwalan</div>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 0.75rem; color: #555;">Developed by: <strong>Rahmat Saleh</strong></div>
+                            <div style="font-size: 0.7rem; color: #999;">Contact: 0190739512 (WA Only)</div>
+                        </div>
                     </div>
                 </div>
-                <div class="calendar-grid" id="calendar-grid"></div>
             </div>
 
-            <div class="card">
-                <h3>💰 Ringkasan Keuangan (Bulan Ini)</h3>
-                <div class="stat-grid">
-                    <div class="stat-card"><span>Omzet (Target)</span><strong id="st-omzet">0</strong></div>
-                    <div class="stat-card" style="background:#fff9f9; border: 1px solid #f5c6cb;"><span>Piutang (Sisa)</span><strong id="st-piutang" style="color:var(--danger)">0</strong></div>
-                    <div class="stat-card"><span>Masuk (Cash)</span><strong id="st-masuk">0</strong></div>
-                    <div class="stat-card"><span>Biaya Ops</span><strong id="st-keluar">0</strong></div>
-                    <div class="stat-card" style="background:#e7f3ff"><span>Laba Bersih</span><strong id="st-laba">0</strong></div>
-                </div>
-                <div class="chart-container"><canvas id="financeChart"></canvas></div>
-            </div>
-
-            <div class="card">
-                <h3>📊 Detail Pengeluaran Operasional</h3>
-                <div style="overflow-x:auto; max-height: 350px;">
-                    <table style="width:100%; border-collapse: collapse; font-size: 0.85rem;">
-                        <thead>
-                            <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6; position: sticky; top: 0;">
-                                <th style="padding:10px; text-align:left;">Tgl</th>
-                                <th style="padding:10px; text-align:left;">Unit</th>
-                                <th style="padding:10px; text-align:left;">Kategori</th>
-                                <th style="padding:10px; text-align:left;">Ket</th>
-                                <th style="padding:10px; text-align:right;">Nominal</th>
-                                <th style="padding:10px; text-align:center;">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="list-expenses-body"></tbody>
-                    </table>
-                </div>
-            </div>
+            <div class="sidebar-grid">
+                <div class="sidebar-section">
+<div class="card">
+    <h3>📅 Jadwal Terdekat</h3>
+    <div class="filter-box" style="grid-template-columns: 1fr; gap: 10px;">
+        <div>
+            <label>Cari Nama / HP / Alamat / Tujuan / Nama Bus / Nopol :</label>
+            <input type="text" id="search-input" placeholder="🔍 Ketik kata kunci..." 
+                   onkeyup="renderSidebar()" 
+                   style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
         </div>
-          
-        <div class="sidebar-grid">
-            <div class="sidebar-section">
-                <div class="card">
-                    <h3>📅 Jadwal Terdekat</h3>
-                    <div class="filter-box">
-                        <div><label>Dari:</label><input type="date" id="filter-start" onchange="renderSidebar()"></div>
-                        <div><label>Sampai:</label><input type="date" id="filter-end" onchange="renderSidebar()"></div>
-                    </div>
-                    <div id="list-upcoming"></div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div><label>Dari:</label><input type="date" id="filter-start" onchange="renderSidebar()"></div>
+            <div><label>Sampai:</label><input type="date" id="filter-end" onchange="renderSidebar()"></div>
+        </div>
+    </div>
+    <div id="list-upcoming"></div>
+</div>
+
+
                 </div>
-            </div>
-            <div class="sidebar-section">
-                <div class="card">
-                    <h3>💸 Belum Lunas</h3>
-                    <div id="list-unpaid"></div>
+                <div class="sidebar-section">
+                    <div class="card">
+                        <h3>💸 Belum Lunas</h3>
+                        <div id="list-unpaid"></div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <div id="modal-account" class="modal"><div class="modal-content">
+        <h2>⚙️ Pengaturan Password Akun</h2>
+        <div class="form-group"><label>Password Akun: <b>Agus</b></label><input type="text" id="set-pass-agus"></div>
+        <div class="form-group"><label>Password Akun: <b>Rudi</b></label><input type="text" id="set-pass-rudi"></div>
+        <div class="form-group"><label>Password Akun: <b>Admin</b></label><input type="text" id="set-pass-admin"></div>
+        <button class="btn-green" style="width: 100%;" onclick="saveAccountSettings()">SIMPAN PERUBAHAN</button>
+        <button class="btn-gray" style="width: 100%; margin-top: 5px;" onclick="closeModal()">BATAL</button>
+    </div></div>
 
     <div id="modal-expense" class="modal"><div class="modal-content">
         <h2 id="expense-modal-title">Catat Biaya Operasional</h2>
@@ -156,13 +219,11 @@
             <input type="hidden" id="edit-id">
             <div class="form-group"><label>Nama Trip / Tujuan</label><input type="text" id="f-trip" required></div>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                <div class="form-group"><label>Tanggal Berangkat</label><input type="date" id="f-date" required onchange="openScheduleModal()"></div>
-                <div class="form-group"><div class="form-group">
-    <label>Unit Bus (Ketik untuk cari)</label>
-    <input list="bus-options" id="f-bus-input" placeholder="Pilih atau Ketik Nama/Plat..." required onchange="syncBusId(this.value)" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
-    <datalist id="bus-options"></datalist>
-    <input type="hidden" id="f-bus">
-</div></div>
+<div class="form-group">
+    <label>Tanggal Berangkat</label>
+    <input type="date" id="f-date" required onchange="openScheduleModal(this.value)">
+</div>
+                <div class="form-group"><label>Unit Bus</label><input list="bus-options" id="f-bus-input" placeholder="Cari..." required onchange="syncBusId(this.value)"><datalist id="bus-options"></datalist><input type="hidden" id="f-bus"></div>
             </div>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                 <div class="form-group"><label>Nama Pemesan</label><input type="text" id="f-cust" required></div>
@@ -194,95 +255,137 @@
         </form>
     </div></div>
 
-    <div id="modal-export" class="modal"><div class="modal-content">
+     <div id="modal-export" class="modal"><div class="modal-content">
         <h2>Export Laporan Bulanan</h2>
         <div class="form-group"><label>Pilih Periode:</label><input type="month" id="export-period" required></div>
         <div style="display:flex; gap:10px; margin-top:20px;"><button onclick="processExport()" class="btn-green" style="flex:2; justify-content:center">DOWNLOAD EXCEL (.XLS)</button><button onclick="closeModal()" class="btn-gray" style="flex:1">BATAL</button></div>
     </div></div>
 
     <script>
-        const KEYS = { BUS: 'bus_pro_v39_buses', SCHED: 'bus_pro_v39_scheds', EXP: 'bus_pro_v39_exps' };
+        const KEYS = { BUS: 'bus_pro_v39_buses', SCHED: 'bus_pro_v39_scheds', EXP: 'bus_pro_v39_exps', USER: 'bus_pro_session', PASS: 'bus_pro_passwords' };
         let buses = [], schedules = [], expenses = [], currDate = new Date();
-        let currentEditExpenseId = null;
+        let currentUser = null;
+        let passwords = { "Agus": "123", "Rudi": "123", "Admin": "eratrans" };
         let myChart = null;
+        let currentEditExpenseId = null;
 
-        // --- 1. SETTING FIREBASE (REPLACE URL DI SINI) ---
         const FIREBASE_URL = "https://bus-managemen-5fca8-default-rtdb.asia-southeast1.firebasedatabase.app/.json";
 
-        // --- 2. FUNGSI SINKRON KE CLOUD ---
-        async function saveToCloud() {
-            if (FIREBASE_URL.includes("ISI_URL")) return;
-            const data = { buses, schedules, expenses };
-            try {
-                await fetch(FIREBASE_URL, {
-                    method: 'PUT',
-                    body: JSON.stringify(data)
-                });
-                console.log("Awan: Data tersinkron ✅");
-            } catch (err) {
-                console.error("Awan: Gagal sinkron", err);
-            }
+        // --- LOGIN LOGIC ---
+        function handleLogin() {
+            const user = document.getElementById('user-select').value;
+            const pass = document.getElementById('user-pass').value;
+            const storedPass = JSON.parse(localStorage.getItem(KEYS.PASS)) || passwords;
+
+            if (pass === storedPass[user]) {
+                currentUser = user;
+                sessionStorage.setItem(KEYS.USER, user);
+                showMainApp();
+            } else { alert("Password Salah!"); }
         }
 
-        // --- 3. MODIFIKASI FUNGSI SAVE ---
+        function handleLogout() { sessionStorage.removeItem(KEYS.USER); location.reload(); }
+
+        function showMainApp() {
+            document.getElementById('login-page').style.display = 'none';
+            document.getElementById('main-app').style.display = 'block';
+            document.getElementById('current-user-display').innerText = "👤 User: " + currentUser;
+            loadData();
+        }
+
+        // --- ACCOUNT SETTINGS ---
+        function openAccountSettings() {
+            if (currentUser !== "Admin") { alert("Hanya Admin Utama yang bisa ubah password!"); return; }
+            document.getElementById('set-pass-agus').value = passwords["Agus"];
+            document.getElementById('set-pass-rudi').value = passwords["Rudi"];
+            document.getElementById('set-pass-admin').value = passwords["Admin"];
+            document.getElementById('modal-account').style.display = 'block';
+        }
+
+        function saveAccountSettings() {
+            passwords["Agus"] = document.getElementById('set-pass-agus').value;
+            passwords["Rudi"] = document.getElementById('set-pass-rudi').value;
+            passwords["Admin"] = document.getElementById('set-pass-admin').value;
+            save(); alert("Password diperbarui!"); closeModal();
+        }
+
+        // --- DATA SYNC ---
+        async function saveToCloud() {
+            if (FIREBASE_URL.includes("ISI_URL")) return;
+            try { await fetch(FIREBASE_URL, { method: 'PUT', body: JSON.stringify({ buses, schedules, expenses, passwords }) }); } catch (err) { }
+        }
+
         function save() {
             localStorage.setItem(KEYS.BUS, JSON.stringify(buses));
             localStorage.setItem(KEYS.SCHED, JSON.stringify(schedules));
             localStorage.setItem(KEYS.EXP, JSON.stringify(expenses));
-            saveToCloud(); // Sinkronkan setiap kali simpan
+            localStorage.setItem(KEYS.PASS, JSON.stringify(passwords));
+            saveToCloud();
         }
 
-        // --- 4. LOAD DATA (UTAMA) ---
-        window.onload = async () => {
-            // Load lokal dulu
+        async function loadData() {
             buses = JSON.parse(localStorage.getItem(KEYS.BUS)) || [];
             schedules = JSON.parse(localStorage.getItem(KEYS.SCHED)) || [];
             expenses = JSON.parse(localStorage.getItem(KEYS.EXP)) || [];
+            passwords = JSON.parse(localStorage.getItem(KEYS.PASS)) || passwords;
             renderAll();
-
-            // Load dari Cloud
-            if (!FIREBASE_URL.includes("ISI_URL")) {
-                try {
-                    const response = await fetch(FIREBASE_URL);
-                    const cloudData = await response.json();
-                    if (cloudData) {
-                        buses = cloudData.buses || [];
-                        schedules = cloudData.schedules || [];
-                        expenses = cloudData.expenses || [];
-                        save(); // Update lokal dengan data cloud
-                        renderAll();
-                        console.log("Awan: Data terbaru dimuat ☁️");
-                    }
-                } catch (err) {
-                    console.log("Mode Offline aktif.");
+            try {
+                const response = await fetch(FIREBASE_URL);
+                const cloud = await response.json();
+                if (cloud) {
+                    buses = cloud.buses || []; schedules = cloud.schedules || [];
+                    expenses = cloud.expenses || []; passwords = cloud.passwords || passwords;
+                    save(); renderAll();
                 }
-            }
+            } catch (err) { }
+        }
+
+        window.onload = () => {
+            const session = sessionStorage.getItem(KEYS.USER);
+            if (session) { currentUser = session; showMainApp(); }
         };
 
-        // --- FUNGSI APLIKASI LAINNYA ---
+        // --- CORE UI LOGIC (Index1) ---
         function formatRp(n) { return "Rp " + (parseInt(n)||0).toLocaleString('id-ID'); }
         function renderAll() { renderCalendar(); renderStats(); renderSidebar(); checkLegalAlerts(); }
-        function closeModal() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); document.getElementById('schedule-form').reset(); document.getElementById('expense-form').reset(); document.getElementById('edit-id').value = ''; currentEditExpenseId = null; }
+        function closeModal() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
         function changeMonth(dir) { currDate.setMonth(currDate.getMonth() + dir); renderAll(); }
+        function toggleDP(val) { document.getElementById('dp-group').style.display = (val === 'DP') ? 'block' : 'none'; }
 
-        function updateFinanceChart(omzet, masuk, keluar, laba) {
+        function renderStats() {
+            const mKey = `${currDate.getFullYear()}-${String(currDate.getMonth()+1).padStart(2,'0')}`;
+            const fS = schedules.filter(s => s.date.startsWith(mKey));
+            const fE = expenses.filter(e => e.date.startsWith(mKey));
+            const omzet = fS.reduce((a,b) => a + (parseInt(b.price)||0), 0);
+            const masuk = fS.reduce((a,b) => a + (parseInt(b.dp)||0), 0);
+            const keluar = fE.reduce((a,b) => a + (parseInt(b.amount)||0), 0);
+            document.getElementById('st-omzet').innerText = formatRp(omzet);
+            document.getElementById('st-piutang').innerText = formatRp(omzet - masuk);
+            document.getElementById('st-masuk').innerText = formatRp(masuk);
+            document.getElementById('st-keluar').innerText = formatRp(keluar);
+            document.getElementById('st-laba').innerText = formatRp(masuk - keluar);
+            
+            const tbody = document.getElementById('list-expenses-body'); tbody.innerHTML = '';
+            fE.sort((a,b)=>b.date.localeCompare(a.date)).forEach(e => {
+                const b = buses.find(x => x.id == e.busId);
+                tbody.innerHTML += `<tr><td style="padding:10px">${e.date}</td><td>${b?.name||'Kantor'}</td><td>${e.cat}</td><td>${e.desc||'-'}</td><td align="right">${formatRp(e.amount)}</td><td align="center"><button class="btn-red" style="padding:4px" onclick="delExp(${e.id})">🗑️</button></td></tr>`;
+            });
+            updateFinanceChart(omzet, masuk, keluar, masuk-keluar);
+        }
+
+        function updateFinanceChart(o, m, k, l) {
             const ctx = document.getElementById('financeChart').getContext('2d');
             if (myChart) myChart.destroy();
             myChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: ['Target Omzet', 'Cash Masuk', 'Biaya Ops', 'Laba Bersih'],
-                    datasets: [{
-                        label: 'Rupiah (Rp)',
-                        data: [omzet, masuk, keluar, laba],
-                        backgroundColor: ['rgba(0, 90, 156, 0.4)', 'rgba(40, 167, 69, 0.4)', 'rgba(220, 53, 69, 0.4)', 'rgba(253, 126, 20, 0.4)'],
-                        borderColor: ['#005a9c', '#28a745', '#dc3545', '#fd7e14'],
-                        borderWidth: 2, borderRadius: 5
-                    }]
+                    labels: ['Target', 'Masuk', 'Biaya', 'Laba'],
+                    datasets: [{ label: 'Rp', data: [o, m, k, l], backgroundColor: ['#005a9c', '#28a745', '#dc3545', '#fd7e14'] }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
         }
+
 
         function renderStats() {
             const mKey = `${currDate.getFullYear()}-${String(currDate.getMonth()+1).padStart(2,'0')}`;
@@ -309,13 +412,15 @@
             });
         }
 
+
+
         function renderCalendar() {
             const grid = document.getElementById('calendar-grid'); grid.innerHTML = '';
             const y = currDate.getFullYear(), m = currDate.getMonth();
             document.getElementById('month-year').innerText = currDate.toLocaleString('id-ID', {month:'long', year:'numeric'});
-            ['Min','Sen','Sel','Rab','Kam','Jum','Sab'].forEach(d => grid.innerHTML += `<div align="center" style="font-size:0.7rem; font-weight:bold; color:#888;">${d}</div>`);
             const first = new Date(y, m, 1).getDay();
             const last = new Date(y, m + 1, 0).getDate();
+            ['Min','Sen','Sel','Rab','Kam','Jum','Sab'].forEach(d => grid.innerHTML += `<div align="center" style="font-size:0.7rem; font-weight:bold; color:#888;">${d}</div>`);
             for(let i=0; i<first; i++) grid.innerHTML += `<div class="day empty"></div>`;
             for(let i=1; i<=last; i++) {
                 const dStr = `${y}-${String(m+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
@@ -329,83 +434,127 @@
             }
         }
 
+
+
 // --- FUNGSI FILTER & SIDEBAR (REPLACE DI SINI) ---
-        function renderSidebar() {
-            const up = document.getElementById('list-upcoming');
-            const un = document.getElementById('list-unpaid');
-            up.innerHTML = ''; 
-            un.innerHTML = '';
-            
-            // Ambil Nilai Filter
-            const fStart = document.getElementById('filter-start').value;
-            const fEnd = document.getElementById('filter-end').value;
-            const today = new Date().toISOString().split('T')[0];
+function renderSidebar() {
+    const up = document.getElementById('list-upcoming');
+    const un = document.getElementById('list-unpaid');
+    up.innerHTML = ''; 
+    un.innerHTML = '';
+    
+    const searchText = document.getElementById('search-input').value.toLowerCase();
+    const fStart = document.getElementById('filter-start').value;
+    const fEnd = document.getElementById('filter-end').value;
+    const today = new Date().toISOString().split('T')[0];
 
-            // 1. Logika untuk Jadwal Terdekat (Mendukung Filter Tanggal)
-            let filteredUpcoming = schedules;
-            
-            if (fStart && fEnd) {
-                // Jika filter diisi, tampilkan sesuai range tanggal
-                filteredUpcoming = schedules.filter(s => s.date >= fStart && s.date <= fEnd);
-            } else {
-                // Jika filter kosong, tampilkan jadwal mulai dari hari ini ke depan
-                filteredUpcoming = schedules.filter(s => s.date >= today);
-            }
+    // FUNGSI PENCARIAN PINTAR (Ditambah filter Bus)
+    const isSearchMatch = (s) => {
+        if (!searchText) return true;
+        
+        // Cari data bus terkait jadwal ini
+        const b = buses.find(x => x.id == s.busId);
+        const busName = b ? b.name.toLowerCase() : '';
+        const busPlate = b ? b.plate.toLowerCase() : '';
 
-            // Urutkan berdasarkan tanggal terdekat
-            filteredUpcoming.sort((a, b) => a.date.localeCompare(b.date))
-                .forEach(s => up.innerHTML += createCardHtml(s, false));
+        return (
+            s.cust.toLowerCase().includes(searchText) || 
+            s.trip.toLowerCase().includes(searchText) || 
+            (s.addr && s.addr.toLowerCase().includes(searchText)) || 
+            s.phone.includes(searchText) ||
+            busName.includes(searchText) || // Pencarian Nama Bus
+            busPlate.includes(searchText)    // Pencarian Plat Nomor
+        );
+    };
 
-            // 2. Logika untuk Belum Lunas (Selalu tampilkan semua yang belum lunas)
-            schedules.filter(s => s.status !== 'Lunas')
-                .sort((a, b) => a.date.localeCompare(b.date))
-                .forEach(s => un.innerHTML += createCardHtml(s, true));
-        }
+    // 1. Filter untuk JADWAL TERDEKAT
+    let upcomingData = schedules.filter(s => {
+        const matchSearch = isSearchMatch(s);
+        let matchDate = (fStart && fEnd) ? (s.date >= fStart && s.date <= fEnd) : (s.date >= today);
+        return matchSearch && matchDate;
+    });
 
-        function createCardHtml(s, isUnpaidColumn) {
-            const b = buses.find(x => x.id == s.busId); const sisa = (parseInt(s.price)||0) - (parseInt(s.dp)||0);
-            const badgeClass = s.status === 'Lunas' ? 'badge-lunas' : (s.status === 'DP' ? 'badge-dp' : 'badge-blm');
-            return `<div class="info-item" style="border-left-color: ${isUnpaidColumn ? 'var(--danger)' : 'var(--primary)'}"><div style="display:flex; justify-content:space-between; align-items:flex-start;"><strong>${s.trip}</strong><span class="badge ${badgeClass}">${s.status}</span></div><div class="detail-row"><span>📅 <b>Tgl:</b> ${s.date}</span><span>🚌 <b>Bus:</b> ${b?.name || '-'}</span><span style="display: flex; justify-content: space-between; width: 100%;"><span>👤 <b>Pemesan:</b> ${s.cust}</span><span style="color: var(--primary); font-weight: 500;">📞 ${s.phone}</span></span></div><div class="pickup-box">📍 <b>Jemput:</b> ${s.pickup || '-'}</div><div style="margin-top:10px; border-top:1px dashed #eee; padding-top:8px;"><div style="font-weight:bold; color:${sisa > 0 ? 'var(--danger)' : 'var(--success)'}">${sisa > 0 ? 'Sisa Tagihan: ' + formatRp(sisa) : 'SUDAH LUNAS'}</div></div><div style="display:flex; gap:5px; margin-top:10px; flex-wrap:wrap;"><button class="btn-orange" onclick="editSched(${s.id})">✏️ Edit</button><button class="btn-gray" onclick="printInvoice(${s.id})">📄 Kwitansi</button><button class="btn-green" onclick="sendWA(${s.id})">📱 WA</button><button class="btn-red" onclick="delSched(${s.id})">🗑️ Hapus</button></div></div>`;
-        }
+    upcomingData.sort((a, b) => a.date.localeCompare(b.date))
+        .forEach(s => up.innerHTML += createCardHtml(s, false));
 
-function openScheduleModal(date = '') {
-            const busList = document.getElementById('bus-options');
-            const busInput = document.getElementById('f-bus-input');
-            const dateInput = document.getElementById('f-date');
-            const editId = document.getElementById('edit-id').value;
+    // 2. Filter untuk BELUM LUNAS
+    schedules.filter(s => s.status !== 'Lunas' && isSearchMatch(s))
+        .sort((a, b) => a.date.localeCompare(b.date))
+        .forEach(s => un.innerHTML += createCardHtml(s, true));
+}
 
-            if (date) dateInput.value = date;
-            const selectedDate = dateInput.value;
 
-            // Filter bus yang sudah dipakai agar tidak bentrok
-            const usedBusIds = schedules
-                .filter(s => s.date === selectedDate && s.id != editId)
-                .map(s => String(s.busId));
 
-            const availableBuses = buses.filter(b => !usedBusIds.includes(String(b.id)));
+function createCardHtml(s, isUnpaidColumn) {
+    const b = buses.find(x => x.id == s.busId); 
+    const sisa = (parseInt(s.price)||0) - (parseInt(s.dp)||0);
+    const badgeClass = s.status === 'Lunas' ? 'badge-lunas' : (s.status === 'DP' ? 'badge-dp' : 'badge-blm');
+    
+    return `
+    <div class="info-item" style="border-left-color: ${isUnpaidColumn ? 'var(--danger)' : 'var(--primary)'}">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <strong>${s.trip}</strong>
+            <span class="badge ${badgeClass}">${s.status}</span>
+        </div>
+        <div class="detail-row">
+            <span>📅 <b>Tgl:</b> ${s.date}</span>
+            <span>🚌 <b>Bus:</b> ${b?.name || '-'}</span>
+            <span style="display: flex; justify-content: space-between; width: 100%;">
+                <span>👤 <b>Pemesan:</b> ${s.cust}</span>
+                <span style="color: var(--primary); font-weight: 500;">📞 ${s.phone}</span>
+            </span>
+        </div>
+        <div class="pickup-box">📍 <b>Jemput:</b> ${s.pickup || '-'}</div>
+        
+        <span class="badge badge-user">✍️ Oleh: ${s.createdBy || 'System'}</span>
+        
+        <div style="margin-top:10px; border-top:1px dashed #eee; padding-top:8px;">
+            <div style="font-weight:bold; color:${sisa > 0 ? 'var(--danger)' : 'var(--success)'}">
+                ${sisa > 0 ? 'Sisa Tagihan: ' + formatRp(sisa) : 'SUDAH LUNAS'}
+            </div>
+        </div>
+        <div style="display:flex; gap:5px; margin-top:10px; flex-wrap:wrap;">
+            <button class="btn-orange" onclick="editSched(${s.id})">✏️ Edit</button>
+            <button class="btn-gray" onclick="printInvoice(${s.id})">📄 Kwitansi</button>
+            <button class="btn-green" onclick="sendWA(${s.id})">📱 WA</button>
+            <button class="btn-red" onclick="delSched(${s.id})">🗑️ Hapus</button>
+        </div>
+    </div>`;
+}
 
-            // Isi daftar bus ke datalist
-            busList.innerHTML = availableBuses.map(b => 
-                `<option value="${b.name} (${b.plate})" data-id="${b.id}">`
-            ).join('');
 
-            // Logika jika sedang EDIT jadwal
-            if(editId) {
-                const currentSched = schedules.find(x => x.id == editId);
-                const b = buses.find(x => x.id == currentSched.busId);
-                if(b) {
-                    busInput.value = `${b.name} (${b.plate})`;
-                    document.getElementById('f-bus').value = b.id;
-                }
-            } else {
-                busInput.value = '';
-                document.getElementById('f-bus').value = '';
-            }
 
-            document.getElementById('modal-form').style.display = 'block';
-        }
+function openScheduleModal(date = '', isEdit = false) {
+    // 1. Reset Form & ID hanya jika ini BUKAN mode Edit (Input Baru)
+    if (!isEdit) {
+        document.getElementById('edit-id').value = '';
+        document.getElementById('schedule-form').reset();
+        document.getElementById('sched-modal-title').innerText = "Input Jadwal Sewa";
+        document.getElementById('dp-group').style.display = 'none';
+        document.getElementById('f-bus-input').value = ''; 
+    }
 
-        // Fungsi pembantu untuk mendapatkan ID bus dari teks yang diketik
+    // 2. Pasang tanggal
+    const dateInput = document.getElementById('f-date');
+    if(date) dateInput.value = date;
+    
+    // 3. Update daftar bus yang tersedia (Logic anti-dobel)
+    const selectedDate = dateInput.value;
+    const currentId = document.getElementById('edit-id').value;
+    const bookedBusIds = schedules
+        .filter(s => s.date === selectedDate && s.id != currentId)
+        .map(s => String(s.busId));
+
+    const availableBuses = buses.filter(b => !bookedBusIds.includes(String(b.id)));
+    document.getElementById('bus-options').innerHTML = availableBuses.map(b => 
+        `<option value="${b.name} (${b.plate})" data-id="${b.id}">`
+    ).join('');
+
+    document.getElementById('modal-form').style.display = 'block';
+}
+
+
+
         function syncBusId(val) {
             const options = document.querySelectorAll('#bus-options option');
             let foundId = "";
@@ -415,33 +564,143 @@ function openScheduleModal(date = '') {
             document.getElementById('f-bus').value = foundId;
         }
 
-        document.getElementById('schedule-form').onsubmit = (e) => {
-            e.preventDefault(); const id = document.getElementById('edit-id').value;
-            const data = { id: id ? parseInt(id) : Date.now(), trip: document.getElementById('f-trip').value, date: document.getElementById('f-date').value, busId: document.getElementById('f-bus').value, cust: document.getElementById('f-cust').value, phone: document.getElementById('f-phone').value, addr: document.getElementById('f-addr').value, pickup: document.getElementById('f-pickup').value, price: parseInt(document.getElementById('f-price').value), status: document.getElementById('f-status').value, dp: parseInt(document.getElementById('f-dp').value) || 0 };
-            if(data.status === 'Lunas') data.dp = data.price;
-            if(id) schedules = schedules.map(s => s.id == id ? data : s); else schedules.push(data);
-            save(); closeModal(); renderAll();
-        };
 
-        function editSched(id) {
-            const s = schedules.find(x => x.id == id); document.getElementById('edit-id').value = s.id; openScheduleModal(s.date);
-            document.getElementById('f-trip').value = s.trip; document.getElementById('f-bus').value = s.busId; document.getElementById('f-cust').value = s.cust; document.getElementById('f-phone').value = s.phone; document.getElementById('f-addr').value = s.addr; document.getElementById('f-pickup').value = s.pickup; document.getElementById('f-price').value = s.price; document.getElementById('f-status').value = s.status; toggleDP(s.status); document.getElementById('f-dp').value = s.dp;
-        }
+
+document.getElementById('schedule-form').onsubmit = (e) => {
+    e.preventDefault();
+    const id = document.getElementById('edit-id').value;
+    const busId = document.getElementById('f-bus').value;
+    const date = document.getElementById('f-date').value;
+
+    // VALIDASI DOUBLE BOOKING (Final Check)
+    const isBooked = schedules.some(s => s.date === date && s.busId == busId && s.id != id);
+    
+    if (isBooked) {
+        alert("⚠️ Maaf, Bus ini sudah dijadwalkan pada tanggal tersebut. Silakan pilih bus lain!");
+        return;
+    }
+
+    // ... sisa kode simpan Anda (data = { ... }, save(), dll)
+    const data = { 
+        id: id ? parseInt(id) : Date.now(), 
+        trip: document.getElementById('f-trip').value, 
+        date: date, 
+        busId: busId, 
+        cust: document.getElementById('f-cust').value, 
+        phone: document.getElementById('f-phone').value, 
+        addr: document.getElementById('f-addr').value, 
+        pickup: document.getElementById('f-pickup').value, 
+        price: parseInt(document.getElementById('f-price').value), 
+        status: document.getElementById('f-status').value, 
+        dp: parseInt(document.getElementById('f-dp').value) || 0,
+        createdBy: currentUser // Tambahkan info siapa yang input
+    };
+    
+    if(data.status === 'Lunas') data.dp = data.price;
+    if(id) schedules = schedules.map(s => s.id == id ? data : s); else schedules.push(data);
+    
+    save(); 
+    closeModal(); 
+    renderAll();
+};
+
+
+
+function editSched(id) {
+    const s = schedules.find(x => x.id == id); 
+    if (!s) return;
+
+    // A. Set ID dan Judul DULUAN
+    document.getElementById('edit-id').value = s.id; 
+    document.getElementById('sched-modal-title').innerText = "Edit Jadwal Sewa";
+
+    // B. Buka Modal dengan isEdit = true agar form tidak di-reset kosong
+    openScheduleModal(s.date, true);
+
+    // C. Baru isi field-nya
+    document.getElementById('f-trip').value = s.trip;
+    document.getElementById('f-bus').value = s.busId;
+    document.getElementById('f-cust').value = s.cust;
+    document.getElementById('f-phone').value = s.phone;
+    document.getElementById('f-addr').value = s.addr;
+    document.getElementById('f-pickup').value = s.pickup;
+    document.getElementById('f-price').value = s.price;
+    document.getElementById('f-status').value = s.status;
+    
+    toggleDP(s.status); 
+    document.getElementById('f-dp').value = s.dp;
+
+    // Isi tampilan nama bus di input pencarian
+    const b = buses.find(x => x.id == s.busId);
+    if(b) document.getElementById('f-bus-input').value = `${b.name} (${b.plate})`;
+}
+
 
         function delSched(id) { if(confirm('Hapus jadwal ini?')) { schedules = schedules.filter(x => x.id !== id); save(); renderAll(); } }
         function toggleDP(val) { document.getElementById('dp-group').style.display = (val === 'DP') ? 'block' : 'none'; }
-        function openExpenseModal() { document.getElementById('e-bus').innerHTML = '<option value="0">Kantor / Umum</option>' + buses.map(b => `<option value="${b.id}">${b.name}</option>`).join(''); document.getElementById('modal-expense').style.display = 'block'; }
+ 
+function openExpenseModal() {
+    // Jika buka lewat tombol "Tambah", pastikan ID edit di-null-kan
+    if (event && event.target.innerText.includes("OPS")) {
+        currentEditExpenseId = null; 
+        document.getElementById('expense-form').reset();
+        document.getElementById('expense-modal-title').innerText = "Catat Biaya Operasional";
+    }
+    document.getElementById('e-bus').innerHTML = '<option value="0">Kantor / Umum</option>' + buses.map(b => `<option value="${b.id}">${b.name}</option>`).join(''); 
+    document.getElementById('modal-expense').style.display = 'block'; 
+}
 
-        function editExpense(id) {
-            const exp = expenses.find(x => x.id == id); if (!exp) return; currentEditExpenseId = id; openExpenseModal();
-            document.getElementById('e-date').value = exp.date; document.getElementById('e-bus').value = exp.busId; document.getElementById('e-cat').value = exp.cat; document.getElementById('e-amount').value = exp.amount; document.getElementById('e-desc').value = exp.desc; document.getElementById('expense-modal-title').innerText = "Edit Biaya";
+function editExpense(id) {
+    // 1. Cari data biaya berdasarkan ID
+    const exp = expenses.find(x => x.id == id); 
+    if (!exp) return; 
+
+    // 2. Tandai ID yang sedang diedit ke variabel global
+    currentEditExpenseId = id; 
+
+    // 3. Buka modal (ini akan mengisi pilihan bus secara otomatis)
+    openExpenseModal(); 
+    
+    // 4. Ubah judul dan isi form dengan data lama
+    document.getElementById('expense-modal-title').innerText = "Edit Biaya Operasional";
+    document.getElementById('e-date').value = exp.date; 
+    document.getElementById('e-bus').value = exp.busId; 
+    document.getElementById('e-cat').value = exp.cat; 
+    document.getElementById('e-amount').value = exp.amount; 
+    document.getElementById('e-desc').value = exp.desc; 
+}
+
+document.getElementById('expense-form').onsubmit = (e) => {
+    e.preventDefault(); 
+    
+    const data = { 
+        date: document.getElementById('e-date').value, 
+        busId: document.getElementById('e-bus').value, 
+        cat: document.getElementById('e-cat').value, 
+        amount: parseInt(document.getElementById('e-amount').value), 
+        desc: document.getElementById('e-desc').value 
+    };
+
+    // CEK: Apakah ini sedang EDIT atau TAMBAH BARU?
+    if (currentEditExpenseId) { 
+        // Mode EDIT: Cari index data lama dan timpa
+        const index = expenses.findIndex(x => x.id === currentEditExpenseId);
+        if (index !== -1) {
+            expenses[index] = { ...data, id: currentEditExpenseId }; // Gunakan ID yang sama
         }
+    } else { 
+        // Mode TAMBAH BARU: Pakai ID baru dari timestamp
+        expenses.push({ ...data, id: Date.now() }); 
+    }
 
-        document.getElementById('expense-form').onsubmit = (e) => {
-            e.preventDefault(); const data = { date: document.getElementById('e-date').value, busId: document.getElementById('e-bus').value, cat: document.getElementById('e-cat').value, amount: parseInt(document.getElementById('e-amount').value), desc: document.getElementById('e-desc').value };
-            if (currentEditExpenseId) expenses = expenses.map(x => x.id === currentEditExpenseId ? { ...data, id: x.id } : x); else expenses.push({ ...data, id: Date.now() });
-            save(); closeModal(); renderAll();
-        };
+    save(); // Simpan perubahan
+    closeModal(); 
+    renderAll(); // Refresh tabel agar data langsung berubah
+    
+    // Reset variabel global setelah selesai
+    currentEditExpenseId = null; 
+};
+
 
         function deleteExpense(id) { if(confirm('Hapus data biaya ini?')) { expenses = expenses.filter(x => x.id !== id); save(); renderAll(); } }
         function openFleetModal() { renderFleetList(); document.getElementById('modal-fleet').style.display = 'block'; }
@@ -462,7 +721,58 @@ function openScheduleModal(date = '') {
         function resetFleetForm() { document.getElementById('fleet-form').reset(); document.getElementById('bus-edit-id').value = ''; document.getElementById('fleet-form-title').innerText = 'Tambah Unit Baru'; document.getElementById('btn-save-bus').innerText = 'TAMBAH UNIT'; document.getElementById('btn-cancel-bus').style.display = 'none'; }
         function checkLegalAlerts() { const container = document.getElementById('legal-alerts'); container.innerHTML = ''; buses.forEach(b => { [{t:'STNK', d:new Date(b.stnk)}, {t:'KIR', d:new Date(b.kir)}].forEach(a => { if(!a.d || isNaN(a.d)) return; const diff = Math.ceil((a.d - new Date()) / (1000 * 60 * 60 * 24)); if(diff <= 30) { const col = diff <= 0 ? 'var(--danger)' : '#856404'; container.innerHTML += `<div style="padding:10px; background:white; border-left:5px solid ${col}; margin-bottom:10px; font-size:0.8rem;">⚠️ <b>${b.name}</b>: Pajak ${a.t} ${diff <= 0 ? 'Mati!' : 'sisa ' + diff + ' hr'}</div>`; } }); }); }
 
-        function printInvoice(id) {
+
+
+function sendWA(id) {
+            const s = schedules.find(x => x.id == id);
+            const b = buses.find(x => x.id == s.busId);
+            const sisa = (parseInt(s.price) || 0) - (parseInt(s.dp) || 0);
+            
+            // Logika Status Pembayaran untuk Pesan
+            let statusText = "";
+            if (s.status === 'Lunas') {
+                statusText = "LUNAS \u2705 (Terima Kasih!)";
+            } else if (s.status === 'DP') {
+                statusText = `Sisa Tagihan: *${formatRp(sisa)}* \u23F3`;
+            } else {
+                statusText = "Belum Ada Pembayaran \u26A0\uFE0F";
+            }
+
+            // Template Pesan Profesional
+            const rawMsg = `*KONFIRMASI RESERVASI BUS* \uD83D\uDE8C
+--------------------------------------------
+Halo Kak *${s.cust}*, terimakasih telah mempercayakan perjalanan Anda kepada kami. Berikut adalah rincian reservasi Anda:
+
+\uD83D\uDCCD *Tujuan:* ${s.trip}
+\uD83D\uDCC5 *Tanggal:* ${new Date(s.date).toLocaleDateString('id-ID', {day:'2-digit', month:'long', year:'numeric'})}
+\uD83D\uDE8C *Armada:* ${b?.name || '-'} (${b?.plate || '-'})
+\uD83D\uDCCD *Titik Jemput:* ${s.pickup || '-'}
+\uD83C\uDFE0 *Alamat:* ${s.addr || '-'}
+
+*RINCIAN PEMBAYARAN:*
+\uD83D\uDCB0 Total Harga: ${formatRp(s.price)}
+\uD83D\uDCB3 DP/Masuk: ${formatRp(s.dp)}
+\uD83D\uDCDD *Status: ${statusText}*
+--------------------------------------------
+
+*Catatan:*
+- Mohon pastikan titik jemput sudah sesuai.
+- Harap standby 30 menit sebelum keberangkatan.
+
+Jika ada pertanyaan lebih lanjut, silakan hubungi kami kembali. Sampai jumpa di perjalanan! \uD83D\uDE4F`;
+
+            const encodedMsg = encodeURIComponent(rawMsg);
+            let phone = s.phone.replace(/\D/g, ''); 
+            
+            // Format nomor ke standar internasional (62)
+            if (phone.startsWith('0')) phone = '62' + phone.substring(1);
+            if (phone.startsWith('8')) phone = '62' + phone;
+
+            window.open(`https://wa.me/${phone}?text=${encodedMsg}`);
+        }
+
+
+       function printInvoice(id) {
     const s = schedules.find(x => x.id == id), b = buses.find(x => x.id == s.busId);
     const sisa = s.price - s.dp;
     const pWin = window.open('', '_blank');
@@ -615,181 +925,167 @@ function openScheduleModal(date = '') {
     pWin.document.close();
 }
 
-function sendWA(id) {
-            const s = schedules.find(x => x.id == id);
-            const b = buses.find(x => x.id == s.busId);
-            const sisa = (parseInt(s.price) || 0) - (parseInt(s.dp) || 0);
-            
-            // Logika Status Pembayaran untuk Pesan
-            let statusText = "";
-            if (s.status === 'Lunas') {
-                statusText = "LUNAS \u2705 (Terima Kasih!)";
-            } else if (s.status === 'DP') {
-                statusText = `Sisa Tagihan: *${formatRp(sisa)}* \u23F3`;
-            } else {
-                statusText = "Belum Ada Pembayaran \u26A0\uFE0F";
-            }
 
-            // Template Pesan Profesional
-            const rawMsg = `*KONFIRMASI RESERVASI BUS* \uD83D\uDE8C
---------------------------------------------
-Halo Kak *${s.cust}*, terimakasih telah mempercayakan perjalanan Anda kepada kami. Berikut adalah rincian reservasi Anda:
-
-\uD83D\uDCCD *Tujuan:* ${s.trip}
-\uD83D\uDCC5 *Tanggal:* ${new Date(s.date).toLocaleDateString('id-ID', {day:'2-digit', month:'long', year:'numeric'})}
-\uD83D\uDE8C *Armada:* ${b?.name || '-'} (${b?.plate || '-'})
-\uD83D\uDCCD *Titik Jemput:* ${s.pickup || '-'}
-\uD83C\uDFE0 *Alamat:* ${s.addr || '-'}
-
-*RINCIAN PEMBAYARAN:*
-\uD83D\uDCB0 Total Harga: ${formatRp(s.price)}
-\uD83D\uDCB3 DP/Masuk: ${formatRp(s.dp)}
-\uD83D\uDCDD *Status: ${statusText}*
---------------------------------------------
-
-*Catatan:*
-- Mohon pastikan titik jemput sudah sesuai.
-- Harap standby 30 menit sebelum keberangkatan.
-
-Jika ada pertanyaan lebih lanjut, silakan hubungi kami kembali. Sampai jumpa di perjalanan! \uD83D\uDE4F`;
-
-            const encodedMsg = encodeURIComponent(rawMsg);
-            let phone = s.phone.replace(/\D/g, ''); 
-            
-            // Format nomor ke standar internasional (62)
-            if (phone.startsWith('0')) phone = '62' + phone.substring(1);
-            if (phone.startsWith('8')) phone = '62' + phone;
-
-            window.open(`https://wa.me/${phone}?text=${encodedMsg}`);
-        }
-
-        function openExportModal() { document.getElementById('modal-export').style.display = 'block'; }
-                // --- KWITANSI ---
-
-function processExport() {
-    const period = document.getElementById('export-period').value;
-    if (!period) return alert("Pilih periode bulan terlebih dahulu!");
-
-    const [year, month] = period.split('-');
-    const monthName = new Date(year, month - 1).toLocaleString('id-ID', { month: 'long', year: 'numeric' });
-
-    const filteredSchedules = schedules.filter(s => s.date.startsWith(period));
-    const filteredExpenses = expenses.filter(e => e.date.startsWith(period));
-
-    // Hitung Ringkasan
-    const totalOmzet = filteredSchedules.reduce((a, b) => a + (parseInt(b.price) || 0), 0);
-    const totalMasuk = filteredSchedules.reduce((a, b) => a + (parseInt(b.dp) || 0), 0);
-    const totalSisa = totalOmzet - totalMasuk;
-    const totalKeluar = filteredExpenses.reduce((a, b) => a + (parseInt(b.amount) || 0), 0);
-    const labaBersih = totalMasuk - totalKeluar;
-
-    // Template HTML untuk Excel dengan Style Warna
-    let html = `
-    <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-    <head><meta charset="utf-8"></head>
-    <body>
-        <style>
-            .title { font-size: 18pt; font-weight: bold; text-align: center; color: #005a9c; }
-            .subtitle { font-size: 12pt; text-align: center; margin-bottom: 20px; }
-            table { border-collapse: collapse; width: 100%; }
-            th { background-color: #005a9c; color: #ffffff; border: 1px solid #000; padding: 5px; }
-            td { border: 1px solid #ccc; padding: 5px; }
-            .header-sec { background-color: #e2efda; font-weight: bold; }
-            .money { text-align: right; }
-            .summary-table td { font-weight: bold; border: 2px solid #000; }
-            .bg-blue { background-color: #ddeeef; }
-            .bg-red { background-color: #fce4d6; color: #c00000; }
-            .bg-green { background-color: #e2efda; color: #375623; }
-        </style>
-
-        <div class="title">LAPORAN BULANAN BUS MANAGER PRO</div>
-        <div class="subtitle">Periode: ${monthName}</div>
-
-        <h3>1. Ringkasan Keuangan</h3>
-        <table class="summary-table">
-            <tr><td width="200">Total Omzet (Target)</td><td class="money">${formatRp(totalOmzet)}</td></tr>
-            <tr><td>Total Cash Masuk</td><td class="money bg-green">${formatRp(totalMasuk)}</td></tr>
-            <tr><td>Total Piutang (Sisa)</td><td class="money bg-red">${formatRp(totalSisa)}</td></tr>
-            <tr><td>Total Biaya Operasional</td><td class="money" style="color:#777;">${formatRp(totalKeluar)}</td></tr>
-            <tr style="font-size:14pt; background-color: #fff2cc;"><td>LABA BERSIH (Cash - Biaya)</td><td class="money">${formatRp(labaBersih)}</td></tr>
-        </table>
-
-        <br>
-        <h3>2. Detail Jadwal & Pendapatan</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Tanggal</th>
-                    <th>Tujuan / Trip</th>
-                    <th>Pelanggan</th>
-                    <th>Unit Bus</th>
-                    <th>Total Harga</th>
-                    <th>DP / Masuk</th>
-                    <th>Sisa Tagihan</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${filteredSchedules.map(s => {
-                    const b = buses.find(x => x.id == s.busId);
-                    const sisa = s.price - s.dp;
-                    return `
-                    <tr>
-                        <td>${s.date}</td>
-                        <td>${s.trip}</td>
-                        <td>${s.cust}</td>
-                        <td>${b?.name || '-'}</td>
-                        <td class="money">${s.price}</td>
-                        <td class="money">${s.dp}</td>
-                        <td class="money" style="${sisa > 0 ? 'color:red' : ''}">${sisa}</td>
-                        <td>${s.status}</td>
-                    </tr>`;
-                }).join('')}
-            </tbody>
-        </table>
-
-        <br>
-        <h3>3. Detail Pengeluaran Operasional</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Tanggal</th>
-                    <th>Unit Terkait</th>
-                    <th>Kategori</th>
-                    <th>Keterangan</th>
-                    <th>Nominal (Rp)</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${filteredExpenses.map(e => {
-                    const b = buses.find(x => x.id == e.busId);
-                    return `
-                    <tr>
-                        <td>${e.date}</td>
-                        <td>${b?.name || 'Kantor'}</td>
-                        <td>${e.cat}</td>
-                        <td>${e.desc || '-'}</td>
-                        <td class="money">${e.amount}</td>
-                    </tr>`;
-                }).join('')}
-            </tbody>
-        </table>
-    </body>
-    </html>`;
-
-    // Proses Download sebagai file .xls
-    const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `Laporan_Lengkap_${period}.xls`;
-    link.click();
-    URL.revokeObjectURL(url);
-    closeModal();
+// 1. Fungsi untuk MEMBUKA jendela (modal) Export
+function openExportModal() {
+    document.getElementById('modal-export').style.display = 'block';
 }
 
-        function exportBackup() { const data = { buses, schedules, expenses }; const blob = new Blob([JSON.stringify(data)], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `backup_${Date.now()}.json`; a.click(); }
-        function importData(e) { const reader = new FileReader(); reader.onload = (ev) => { const data = JSON.parse(ev.target.result); if(confirm('Restore data?')) { buses = data.buses || []; schedules = data.schedules || []; expenses = data.expenses || []; save(); renderAll(); } }; reader.readAsText(e.target.files[0]); }
+// 2. Fungsi untuk MEMPROSES download Excel (Pastikan namanya sama)
+function processExport() {
+    try {
+        const period = document.getElementById('export-period').value;
+        if (!period) return alert("Pilih periode bulan terlebih dahulu!");
+
+        const [year, month] = period.split('-');
+        const monthName = new Date(year, month - 1).toLocaleString('id-ID', { month: 'long', year: 'numeric' });
+
+        // Filter data berdasarkan periode
+        const filteredS = schedules.filter(s => s.date && s.date.startsWith(period));
+        const filteredE = expenses.filter(e => e.date && e.date.startsWith(period));
+
+        // Hitung Ringkasan Keuangan
+        const totalOmzet = filteredS.reduce((a, b) => a + (Number(b.price) || 0), 0);
+        const totalMasuk = filteredS.reduce((a, b) => a + (Number(b.dp) || 0), 0);
+        const totalPiutang = totalOmzet - totalMasuk;
+        const totalKeluar = filteredE.reduce((a, b) => a + (Number(b.amount) || 0), 0);
+        const labaBersih = totalMasuk - totalKeluar;
+
+        // Template HTML dengan Style Warna dan Layout Menarik
+        let template = `
+        <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+        <head><meta charset="UTF-8">
+        <style>
+            .header-table { font-family: 'Segoe UI', sans-serif; }
+            .title { font-size: 18pt; font-weight: bold; color: #005a9c; text-align: center; }
+            .subtitle { font-size: 12pt; text-align: center; color: #666; margin-bottom: 20px; }
+            table { border-collapse: collapse; width: 100%; font-family: Arial, sans-serif; }
+            th { background-color: #005a9c; color: white; border: 1px solid #004080; padding: 8px; }
+            td { border: 1px solid #ccc; padding: 6px; font-size: 10pt; }
+            .bg-summary { background-color: #f8f9fa; font-weight: bold; }
+            .text-right { text-align: right; }
+            .text-center { text-align: center; }
+            .status-lunas { background-color: #d4edda; color: #155724; }
+            .status-dp { background-color: #fff3cd; color: #856404; }
+            .status-blm { background-color: #f8d7da; color: #721c24; }
+            .row-even { background-color: #f2f2f2; }
+            .money-green { color: #28a745; font-weight: bold; }
+            .money-red { color: #dc3545; font-weight: bold; }
+        </style>
+        </head>
+        <body>
+            <div class="title">LAPORAN OPERASIONAL SMART BUS MANAGER</div>
+            <div class="subtitle">Periode: ${monthName}</div>
+            <br>
+
+            <h3>1. RINGKASAN KEUANGAN (CASH FLOW)</h3>
+            <table border="1">
+                <tr><td width="250" class="bg-summary">Total Omzet (Target Pendapatan)</td><td class="text-right">${formatRp(totalOmzet)}</td></tr>
+                <tr><td class="bg-summary">Total Uang Masuk (Cash In)</td><td class="text-right money-green">${formatRp(totalMasuk)}</td></tr>
+                <tr><td class="bg-summary">Total Piutang (Sisa Tagihan)</td><td class="text-right money-red">${formatRp(totalPiutang)}</td></tr>
+                <tr><td class="bg-summary">Total Biaya Operasional (Cash Out)</td><td class="text-right" style="color:#666;">${formatRp(totalKeluar)}</td></tr>
+                <tr style="background-color: #e7f3ff; font-size: 12pt;">
+                    <td><strong>LABA BERSIH (Uang Masuk - Biaya)</strong></td>
+                    <td class="text-right"><strong>${formatRp(labaBersih)}</strong></td>
+                </tr>
+            </table>
+
+            <br>
+            <h3>2. DETAIL JADWAL PERJALANAN</h3>
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>Tgl Berangkat</th>
+                        <th>Tujuan / Trip</th>
+                        <th>Pelanggan</th>
+                        <th>Unit Bus</th>
+                        <th>Harga Sewa</th>
+                        <th>DP / Masuk</th>
+                        <th>Sisa</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${filteredS.map((s, index) => {
+                        const b = buses.find(bx => bx.id == s.busId);
+                        const sisa = (Number(s.price) || 0) - (Number(s.dp) || 0);
+                        const rowClass = index % 2 === 0 ? '' : 'row-even';
+                        const stClass = s.status === 'Lunas' ? 'status-lunas' : (s.status === 'DP' ? 'status-dp' : 'status-blm');
+                        return `
+                        <tr class="${rowClass}">
+                            <td class="text-center">${formatDateDisplay(s.date)}</td>
+                            <td>${s.trip || '-'}</td>
+                            <td>${s.cust || '-'}</td>
+                            <td>${b ? b.name : '-'} (${b ? b.plate : '-'})</td>
+                            <td class="text-right">${Number(s.price) || 0}</td>
+                            <td class="text-right">${Number(s.dp) || 0}</td>
+                            <td class="text-right ${sisa > 0 ? 'money-red' : ''}">${sisa}</td>
+                            <td class="text-center ${stClass}">${s.status}</td>
+                        </tr>`;
+                    }).join('')}
+                </tbody>
+            </table>
+
+            <br>
+            <h3>3. DETAIL PENGELUARAN OPERASIONAL</h3>
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>Tgl</th>
+                        <th>Unit Terkait</th>
+                        <th>Kategori</th>
+                        <th>Keterangan</th>
+                        <th>Nominal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${filteredE.map((e, index) => {
+                        const b = buses.find(bx => bx.id == e.busId);
+                        const rowClass = index % 2 === 0 ? '' : 'row-even';
+                        return `
+                        <tr class="${rowClass}">
+                            <td class="text-center">${formatDateDisplay(e.date)}</td>
+                            <td>${b ? b.name : 'Kantor/Umum'}</td>
+                            <td>${e.cat || '-'}</td>
+                            <td>${e.desc || '-'}</td>
+                            <td class="text-right">${Number(e.amount) || 0}</td>
+                        </tr>`;
+                    }).join('')}
+                </tbody>
+            </table>
+            <br>
+            <p style="font-size: 8pt; color: #999;">Dicetak otomatis oleh SMART BUS MANAGER v36.0 pada ${new Date().toLocaleString('id-ID')}</p>
+        </body>
+        </html>`;
+
+        const blob = new Blob([template], { type: 'application/vnd.ms-excel' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Laporan_Lengkap_${period}.xls`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        
+        closeModal();
+    } catch (e) {
+        alert("Gagal Export: " + e.message);
+    }
+}
+
+
+        function exportBackup() { const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify({buses,schedules,expenses,passwords})], {type:'application/json'})); a.download=`backup.json`; a.click(); }
+        function importData(e) { const r=new FileReader(); r.onload=(ev)=>{ const d=JSON.parse(ev.target.result); buses=d.buses||[]; schedules=d.schedules||[]; expenses=d.expenses||[]; passwords=d.passwords||passwords; save(); renderAll(); }; r.readAsText(e.target.files[0]); }
+
+
+// Fungsi untuk mengubah format tanggal YYYY-MM-DD menjadi DD/MM/YYYY
+function formatDateDisplay(dateStr) {
+    if (!dateStr) return "-";
+    const [year, month, day] = dateStr.split('-');
+    return `${day}/${month}/${year}`;
+}
+
     </script>
 </body>
 </html>
