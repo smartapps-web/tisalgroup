@@ -213,8 +213,8 @@
                             <span id="month-year" style="font-weight:bold; font-size:1.1rem; margin:0 10px; min-width:140px; display:inline-block; text-align:center;">Bulan</span>
                             <button class="btn-blue" onclick="changeMonth(1)">▶</button>
                         </div>
-                        <div style="display:flex; gap:8px;">
-						<button class="btn-blue" onclick="openBusStatsModal()">📊 Statistik Armada</button>
+                        <div style="display:flex; gap:8px;">				
+						<button class="btn-green" onclick="openBusStatsModal()"       disabled style="opacity: 0.5; cursor: not-allowed;"       >📊 Statistik Armada</button>
                             <button class="btn-orange" onclick="openExpenseModal()">💸 Biaya OPS</button>
                             <button class="btn-gray" onclick="openFleetModal()">🚌 Armada</button>
                             <button class="btn-blue" onclick="openScheduleModal()">🗓️ Jadwal</button>
@@ -442,18 +442,30 @@
     <div id="modal-fleet" class="modal"><div class="modal-content">
         <h3>Kelola Armada</h3>
         <div id="fleet-list" style="margin-bottom:15px; max-height:200px; overflow-y:auto; border:1px solid #eee; border-radius:8px;"></div>
-        <form id="fleet-form">
-            <input type="hidden" id="bus-edit-id">
-            <div class="form-group"><label id="fleet-form-title">Tambah Unit Baru</label><input type="text" id="bus-name" required></div>
-            <div class="form-group"><label>Plat Nomor</label><input type="text" id="bus-plate" required></div>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                <div class="form-group"><label>Pajak STNK</label><input type="date" id="bus-stnk"></div>
-                <div class="form-group"><label>Pajak KIR</label><input type="date" id="bus-kir"></div>
-            </div>
-            <button type="submit" id="btn-save-bus" class="btn-green" style="width:100%">TAMBAH UNIT</button>
-            <button type="button" id="btn-cancel-bus" class="btn-gray" style="width:100%; margin-top:5px; display:none;" onclick="resetFleetForm()">BATAL</button>
-            <button type="button" class="btn-gray" style="width:100%; margin-top:5px;" onclick="closeModal()">TUTUP</button>
-        </form>
+<form id="fleet-form">
+    <input type="hidden" id="bus-edit-id">
+    <div class="form-group">
+        <label id="fleet-form-title">Tambah Unit Baru</label>
+        <input type="text" id="bus-name" required placeholder="Nama Bus (Contoh: Jetbus 3+)">
+    </div>
+    <div class="form-group">
+        <label>Plat Nomor</label>
+        <input type="text" id="bus-plate" required placeholder="Nopol (Contoh: B 1234 TSL)">
+    </div>
+
+    <div class="form-group">
+        <label>Fasilitas & Spesifikasi Unit</label>
+        <input type="text" id="bus-features" placeholder="Contoh: 50 Seat, AC, Toilet, Karaoke, Wifi">
+    </div>
+
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+        <div class="form-group"><label>Pajak STNK</label><input type="date" id="bus-stnk"></div>
+        <div class="form-group"><label>Pajak KIR</label><input type="date" id="bus-kir"></div>
+    </div>
+    <button type="submit" id="btn-save-bus" class="btn-green" style="width:100%">SIMPAN UNIT</button>
+    <button type="button" id="btn-cancel-bus" class="btn-gray" style="width:100%; margin-top:5px; display:none;" onclick="resetFleetForm()">BATAL</button>
+    <button type="button" class="btn-gray" style="width:100%; margin-top:5px;" onclick="closeModal()">TUTUP</button>
+</form>
     </div></div>
 
      <div id="modal-export" class="modal"><div class="modal-content">
@@ -461,6 +473,29 @@
         <div class="form-group"><label>Pilih Periode:</label><input type="month" id="export-period" required></div>
         <div style="display:flex; gap:10px; margin-top:20px;"><button onclick="processExport()" class="btn-green" style="flex:2; justify-content:center">DOWNLOAD EXCEL (.XLS)</button><button onclick="closeModal()" class="btn-gray" style="flex:1">BATAL</button></div>
     </div></div>
+
+
+<div id="modal-premium-lock" class="modal">
+    <div class="modal-content" style="max-width: 400px; text-align: center; border: 2px solid var(--warning);">
+        <div style="font-size: 3rem; margin-bottom: 15px;">🔒</div>
+        <h2 style="color: var(--primary); margin-bottom: 10px;">Fitur Premium</h2>
+        <p style="font-size: 0.95rem; color: #555; line-height: 1.5;">
+            Mohon maaf, fitur <b>Analisa & Statistik Armada</b> saat ini belum aktif pada akun Anda.
+        </p>
+        <div style="background: #fff8e1; padding: 15px; border-radius: 10px; margin: 20px 0; border: 1px solid #ffeeba;">
+            <p style="font-size: 0.85rem; margin: 0; color: #856404;">
+                Dapatkan laporan performa unit, rincian biaya mendalam, dan grafik profit otomatis dengan mengaktifkan paket Premium.
+            </p>
+        </div>
+        <p style="font-size: 0.9rem; font-weight: bold;">Hubungi Developer untuk Aktivasi:</p>
+        <a href="https://wa.me/628190739512" target="_blank" class="btn-green" style="text-decoration: none; justify-content: center; padding: 12px; margin-bottom: 10px;">
+            📱 Chat WhatsApp (Rahmat)
+        </a>
+        <button class="btn-gray" style="width: 100%; padding: 10px;" onclick="document.getElementById('modal-premium-lock').style.display='none'">NANTI SAJA</button>
+    </div>
+</div>
+
+
 
     <script>
 const KEYS = { 
@@ -598,7 +633,7 @@ function saveAccountSettings() {
 async function saveToCloud() {
     if (FIREBASE_URL.includes("ISI_URL")) return;
     try { 
-        // Pastikan 'passwords' ada di dalam body JSON
+        // Mengirim seluruh data termasuk buses yang sudah ada field 'features'-nya
         await fetch(FIREBASE_URL, { 
             method: 'PUT', 
             body: JSON.stringify({ buses, schedules, expenses, passwords }) 
@@ -704,9 +739,6 @@ async function saveToCloud() {
         }
 
 
-
-
-
 function openBusStatsModal() {
     const tbody = document.getElementById('bus-performance-body');
     const monthSelect = document.getElementById('stats-month-filter');
@@ -742,8 +774,13 @@ function openBusStatsModal() {
     const selectedYear = yearSelect.value;
     tbody.innerHTML = '';
 
+// Update Header Tabel nambah kolom Aksi
+    const thead = document.querySelector('#modal-bus-stats thead tr');
+    if (!thead.innerHTML.includes('Aksi')) {
+        thead.innerHTML += '<th style="padding:10px;">Aksi</th>';
+    }
+
     buses.forEach(bus => {
-        // Filter Jadwal
         const busJobs = schedules.filter(s => {
             const d = new Date(s.date);
             const m = String(d.getMonth() + 1).padStart(2, '0');
@@ -751,7 +788,6 @@ function openBusStatsModal() {
             return s.busId == bus.id && (selectedMonth === 'all' || m === selectedMonth) && y === selectedYear;
         });
 
-        // Filter Pengeluaran
         const busExps = expenses.filter(e => {
             const d = new Date(e.date);
             const m = String(d.getMonth() + 1).padStart(2, '0');
@@ -772,11 +808,50 @@ function openBusStatsModal() {
                 <td align="right" style="font-weight:bold; color:${profit >= 0 ? 'var(--success)' : 'var(--danger)'}">
                     ${formatRp(profit)}
                 </td>
+                <td align="center">
+                    <button class="btn-blue" style="padding: 5px 10px;" onclick="viewBusExpDetail(${bus.id}, '${bus.name}')">🔍 Detail Ops</button>
+                </td>
             </tr>
         `;
     });
 
     document.getElementById('modal-bus-stats').style.display = 'block';
+}
+
+
+
+function viewBusExpDetail(busId, busName) {
+    const monthSelect = document.getElementById('stats-month-filter');
+    const yearSelect = document.getElementById('stats-year-filter');
+    const selectedMonth = monthSelect.value;
+    const selectedYear = yearSelect.value;
+
+    // Filter biaya khusus bus ini di periode terpilih
+    const busExps = expenses.filter(e => {
+        const d = new Date(e.date);
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const y = String(d.getFullYear());
+        return e.busId == busId && (selectedMonth === 'all' || m === selectedMonth) && y === selectedYear;
+    });
+
+    if (busExps.length === 0) {
+        alert(`Tidak ada rincian pengeluran untuk ${busName} pada periode ini.`);
+        return;
+    }
+
+    // Buat tampilan rincian dalam bentuk teks rapi (atau bisa dikembangkan ke modal baru)
+    let detailMsg = `--- RINCIAN BIAYA ${busName.toUpperCase()} ---\n\n`;
+    busExps.sort((a,b) => b.date.localeCompare(a.date)).forEach(e => {
+        detailMsg += `📌 ${formatDateDisplay(e.date)} | ${e.cat}\n`;
+        detailMsg += `   Ket: ${e.desc || '-'}\n`;
+        detailMsg += `   Nominal: ${formatRp(e.amount)}\n\n`;
+    });
+    
+    const total = busExps.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+    detailMsg += `--------------------------------\n`;
+    detailMsg += `TOTAL PENGELUARAN: ${formatRp(total)}`;
+
+    alert(detailMsg);
 }
 
 
@@ -789,10 +864,11 @@ function exportBusStatsToExcel() {
         const year = yearSelect.value;
         const selectedMonth = monthSelect.value;
 
-        let tableRows = "";
-        
-        // Loop data bus untuk isi tabel
+        let mainTableRows = "";
+        let detailTables = "";
+
         buses.forEach(bus => {
+            // Filter Data untuk Ringkasan
             const busJobs = schedules.filter(s => {
                 const d = new Date(s.date);
                 return s.busId == bus.id && (selectedMonth === 'all' || String(d.getMonth() + 1).padStart(2,'0') === selectedMonth) && String(d.getFullYear()) === year;
@@ -807,23 +883,61 @@ function exportBusStatsToExcel() {
             const keluar = busExps.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
             const profit = omzet - keluar;
 
-            tableRows += `
+            // Baris untuk Tabel Utama (Ringkasan)
+            mainTableRows += `
                 <tr>
                     <td>${bus.name}</td>
                     <td>${bus.plate}</td>
                     <td align="center">${busJobs.length}</td>
                     <td align="right">${omzet}</td>
                     <td align="right">${keluar}</td>
-                    <td align="right">${profit}</td>
+                    <td align="right" style="font-weight:bold;">${profit}</td>
                 </tr>`;
+
+            // Membuat Tabel Rincian per Bus (Detail Pengeluaran)
+            if (busExps.length > 0) {
+                detailTables += `
+                    <br>
+                    <table border="1">
+                        <thead>
+                            <tr style="background-color: #f1f5f9;">
+                                <th colspan="4" align="left">RINCIAN PENGELUARAN: ${bus.name.toUpperCase()} (${bus.plate})</th>
+                            </tr>
+                            <tr style="background-color: #eeeeee;">
+                                <th width="100">Tanggal</th>
+                                <th width="150">Kategori</th>
+                                <th width="250">Keterangan</th>
+                                <th width="120">Nominal (Rp)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${busExps.map(e => `
+                                <tr>
+                                    <td align="center">${formatDateDisplay(e.date)}</td>
+                                    <td>${e.cat}</td>
+                                    <td>${e.desc || '-'}</td>
+                                    <td align="right">${e.amount}</td>
+                                </tr>
+                            `).join('')}
+                            <tr style="background-color: #fff8e1; font-weight:bold;">
+                                <td colspan="3" align="right">TOTAL PENGELUARAN ${bus.name}</td>
+                                <td align="right">${keluar}</td>
+                            </tr>
+                        </tbody>
+                    </table>`;
+            } else {
+                detailTables += `<p><i>* Tidak ada riwayat pengeluaran untuk ${bus.name} di periode ini.</i></p>`;
+            }
         });
 
         const template = `
             <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
             <head><meta charset="UTF-8"></head>
             <body>
-                <h2 style="color: #005a9c;">LAPORAN PERFORMA ARMADA - TISAL GROUP</h2>
+                <h2 style="color: #005a9c;">LAPORAN ANALISA ARMADA - TISAL GROUP</h2>
                 <p>Periode: <b>${mName} ${year}</b></p>
+                
+                <h3>A. RINGKASAN PERFORMA</h3>
                 <table border="1">
                     <thead>
                         <tr style="background-color: #005a9c; color: white;">
@@ -836,11 +950,16 @@ function exportBusStatsToExcel() {
                         </tr>
                     </thead>
                     <tbody>
-                        ${tableRows}
+                        ${mainTableRows}
                     </tbody>
                 </table>
+
                 <br>
-                <p><i>Dicetak otomatis pada: ${new Date().toLocaleString('id-ID')}</i></p>
+                <h3>B. RINCIAN BIAYA PER UNIT</h3>
+                ${detailTables}
+                
+                <br>
+                <p><i>Laporan ini dihasilkan secara otomatis oleh Smart Bus Manager v3.6 pada ${new Date().toLocaleString('id-ID')}</i></p>
             </body>
             </html>`;
 
@@ -848,7 +967,7 @@ function exportBusStatsToExcel() {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `Laporan_Performa_${mName}_${year}.xls`;
+        a.download = `Analisa_Armada_Tisal_${mName}_${year}.xls`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -867,7 +986,7 @@ function exportBusStatsToExcel() {
             document.getElementById('month-year').innerText = currDate.toLocaleString('id-ID', {month:'long', year:'numeric'});
             const first = new Date(y, m, 1).getDay();
             const last = new Date(y, m + 1, 0).getDate();
-            ['Min','Sen','Sel','Rab','Kam','Jum','Sab'].forEach(d => grid.innerHTML += `<div align="center" style="font-size:0.7rem; font-weight:bold; color:#888;">${d}</div>`);
+            ['Ahad','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'].forEach(d => grid.innerHTML += `<div align="center" style="font-size:0.9rem; font-weight:bold; color:#888;">${d}</div>`);
             for(let i=0; i<first; i++) grid.innerHTML += `<div class="day empty"></div>`;
             for(let i=1; i<=last; i++) {
                 const dStr = `${y}-${String(m+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
@@ -1197,16 +1316,58 @@ document.getElementById('expense-form').onsubmit = (e) => {
         function openFleetModal() { renderFleetList(); document.getElementById('modal-fleet').style.display = 'block'; }
         function renderFleetList() { document.getElementById('fleet-list').innerHTML = buses.map(b => `<div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;"><div><b>${b.name}</b> (${b.plate})</div><div><button class="btn-orange" onclick="editBus(${b.id})">✏️</button><button class="btn-red" onclick="deleteBus(${b.id})">🗑️</button></div></div>`).join(''); }
 
-        document.getElementById('fleet-form').onsubmit = (e) => {
-            e.preventDefault(); const id = document.getElementById('bus-edit-id').value;
-            const data = { id: id ? parseInt(id) : Date.now(), name: document.getElementById('bus-name').value, plate: document.getElementById('bus-plate').value, stnk: document.getElementById('bus-stnk').value, kir: document.getElementById('bus-kir').value };
-            if(id) buses = buses.map(b => b.id == id ? data : b); else buses.push(data);
-            save(); resetFleetForm(); renderFleetList(); renderAll();
-        };
 
-        function editBus(id) {
-            const b = buses.find(x => x.id == id); document.getElementById('bus-edit-id').value = b.id; document.getElementById('bus-name').value = b.name; document.getElementById('bus-plate').value = b.plate; document.getElementById('bus-stnk').value = b.stnk; document.getElementById('bus-kir').value = b.kir; document.getElementById('fleet-form-title').innerText = 'Edit Unit'; document.getElementById('btn-save-bus').innerText = 'UPDATE UNIT'; document.getElementById('btn-cancel-bus').style.display = 'block';
-        }
+document.getElementById('fleet-form').onsubmit = (e) => {
+    e.preventDefault(); 
+    const id = document.getElementById('bus-edit-id').value;
+    
+    // Ambil data dari semua input
+    const data = { 
+        id: id ? parseInt(id) : Date.now(), 
+        name: document.getElementById('bus-name').value, 
+        plate: document.getElementById('bus-plate').value, 
+        features: document.getElementById('bus-features').value, // <-- PASTIKAN INI ADA
+        stnk: document.getElementById('bus-stnk').value, 
+        kir: document.getElementById('bus-kir').value 
+    };
+    
+    // Update atau Tambah ke Array
+    if(id) {
+        buses = buses.map(b => b.id == id ? data : b);
+    } else {
+        buses.push(data);
+    }
+    
+    // SIMPAN KE LOCALSTORAGE & FIREBASE
+    save(); 
+    
+    // Reset form dan refresh tampilan
+    resetFleetForm(); 
+    renderFleetList(); 
+    renderAll();
+    
+    alert("Data armada berhasil diperbarui!");
+};
+
+
+function editBus(id) {
+    const b = buses.find(x => x.id == id); 
+    if(!b) return;
+
+    document.getElementById('bus-edit-id').value = b.id; 
+    document.getElementById('bus-name').value = b.name; 
+    document.getElementById('bus-plate').value = b.plate; 
+    
+    // Pastikan ID 'bus-features' sesuai dengan yang ada di HTML
+    document.getElementById('bus-features').value = b.features || ''; 
+    
+    document.getElementById('bus-stnk').value = b.stnk || ''; 
+    document.getElementById('bus-kir').value = b.kir || ''; 
+    
+    document.getElementById('fleet-form-title').innerText = 'Edit Unit'; 
+    document.getElementById('btn-save-bus').innerText = 'UPDATE UNIT'; 
+    document.getElementById('btn-cancel-bus').style.display = 'block';
+}
 
         function deleteBus(id) { if(confirm('Hapus unit ini?')) { buses = buses.filter(x => x.id !== id); save(); renderFleetList(); renderAll(); } }
         function resetFleetForm() { document.getElementById('fleet-form').reset(); document.getElementById('bus-edit-id').value = ''; document.getElementById('fleet-form-title').innerText = 'Tambah Unit Baru'; document.getElementById('btn-save-bus').innerText = 'TAMBAH UNIT'; document.getElementById('btn-cancel-bus').style.display = 'none'; }
