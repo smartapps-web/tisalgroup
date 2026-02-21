@@ -1054,22 +1054,24 @@ function renderSidebar() {
     const fEnd = document.getElementById('filter-end').value;
     const today = new Date().toISOString().split('T')[0];
 
-    // FUNGSI PENCARIAN PINTAR (Ditambah filter Bus)
+// FUNGSI PENCARIAN PINTAR (Sekarang bisa baca nama Penginput/Admin)
     const isSearchMatch = (s) => {
         if (!searchText) return true;
         
-        // Cari data bus terkait jadwal ini
+        // Ambil data pendukung (Bus & Nama Creator)
         const b = buses.find(x => x.id == s.busId);
         const busName = b ? b.name.toLowerCase() : '';
         const busPlate = b ? b.plate.toLowerCase() : '';
+        const creator = s.createdBy ? s.createdBy.toLowerCase() : ''; // Ambil nama penginput
 
         return (
             s.cust.toLowerCase().includes(searchText) || 
             s.trip.toLowerCase().includes(searchText) || 
             (s.addr && s.addr.toLowerCase().includes(searchText)) || 
             s.phone.includes(searchText) ||
-            busName.includes(searchText) || // Pencarian Nama Bus
-            busPlate.includes(searchText)    // Pencarian Plat Nomor
+            busName.includes(searchText) || 
+            busPlate.includes(searchText) ||
+            creator.includes(searchText) // <-- INI DIA: Biar bisa cari nama Dani/Agus/Admin
         );
     };
 
@@ -1682,6 +1684,7 @@ function processExport() {
                         <th>DP / Masuk</th>
                         <th>Sisa</th>
                         <th>Status</th>
+						<th>Admin/Input Oleh</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -1700,6 +1703,7 @@ function processExport() {
                             <td class="text-right">${Number(s.dp) || 0}</td>
                             <td class="text-right ${sisa > 0 ? 'money-red' : ''}">${sisa}</td>
                             <td class="text-center ${stClass}">${s.status}</td>
+							<td class="text-center">${s.createdBy || '-'}</td>
                         </tr>`;
                     }).join('')}
                 </tbody>
