@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SMART BUS MANAGER v3.6</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+	
+	<script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+
     <style>
         :root {
             --primary: #005a9c; --secondary: #6c757d; --success: #28a745;
@@ -511,6 +515,12 @@ const KEYS = {
         let myChart = null;
         let currentEditExpenseId = null;
 
+const firebaseConfig = { 
+    databaseURL: "https://bus-managemen-5fca8-default-rtdb.asia-southeast1.firebasedatabase.app/" 
+};
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
 const FIREBASE_URL = "https://bus-managemen-5fca8-default-rtdb.asia-southeast1.firebasedatabase.app/tisalgroup.json";
 
         // --- LOGIN LOGIC ---
@@ -631,14 +641,20 @@ function saveAccountSettings() {
 
         // --- DATA SYNC ---
 async function saveToCloud() {
-    if (FIREBASE_URL.includes("ISI_URL")) return;
-    try { 
-        // Mengirim seluruh data termasuk buses yang sudah ada field 'features'-nya
-        await fetch(FIREBASE_URL, { 
-            method: 'PUT', 
-            body: JSON.stringify({ buses, schedules, expenses, passwords }) 
-        }); 
-    } catch (err) { console.error("Gagal sinkron ke Cloud", err); }
+    if (buses.length === 0 && schedules.length === 0) return;
+
+    try {
+        // Simpan ke folder tisalgroup
+        await db.ref("tisalgroup").set({
+            buses,
+            schedules,
+            expenses,
+            passwords
+        });
+        console.log("✅ Tisal Cloud Updated");
+    } catch (err) {
+        console.error("❌ Tisal Cloud Error:", err);
+    }
 }
 
         function save() {
@@ -649,22 +665,33 @@ async function saveToCloud() {
             saveToCloud();
         }
 
-        async function loadData() {
-            buses = JSON.parse(localStorage.getItem(KEYS.BUS)) || [];
-            schedules = JSON.parse(localStorage.getItem(KEYS.SCHED)) || [];
-            expenses = JSON.parse(localStorage.getItem(KEYS.EXP)) || [];
-            passwords = JSON.parse(localStorage.getItem(KEYS.PASS)) || passwords;
-            renderAll();
-            try {
-                const response = await fetch(FIREBASE_URL);
-                const cloud = await response.json();
-                if (cloud) {
-                    buses = cloud.buses || []; schedules = cloud.schedules || [];
-                    expenses = cloud.expenses || []; passwords = cloud.passwords || passwords;
-                    save(); renderAll();
-                }
-            } catch (err) { }
+function loadData() {
+    // Ambil data lokal dulu buat cadangan
+    buses = JSON.parse(localStorage.getItem(KEYS.BUS)) || [];
+    schedules = JSON.parse(localStorage.getItem(KEYS.SCHED)) || [];
+    expenses = JSON.parse(localStorage.getItem(KEYS.EXP)) || [];
+    passwords = JSON.parse(localStorage.getItem(KEYS.PASS)) || passwords;
+    renderAll();
+
+    // AKTIFKAN REALTIME LISTENER KHUSUS TISAL
+    db.ref("tisalgroup").on("value", (snapshot) => {
+        const cloud = snapshot.val();
+        if (cloud) {
+            buses = cloud.buses || [];
+            schedules = cloud.schedules || [];
+            expenses = cloud.expenses || [];
+            passwords = cloud.passwords || passwords;
+
+            localStorage.setItem(KEYS.BUS, JSON.stringify(buses));
+            localStorage.setItem(KEYS.SCHED, JSON.stringify(schedules));
+            localStorage.setItem(KEYS.EXP, JSON.stringify(expenses));
+            localStorage.setItem(KEYS.PASS, JSON.stringify(passwords));
+
+            renderAll(); 
+            console.log("Data Tisal Group Sinkron Realtime! 🚀");
         }
+    });
+}
 
         window.onload = () => {
             const session = sessionStorage.getItem(KEYS.USER);
@@ -1736,7 +1763,7 @@ function processExport() {
     const jam = String(sekarang.getHours()).padStart(2, '0') + "-" + 
                 String(sekarang.getMinutes()).padStart(2, '0');
     
-    const namaFile = `Backup_Tisal_${tgl}_${jam}.json`;
+    const namaFile = `backup_tisal_${tgl}_${jam}.json`;
 
     // 2. Proses Download
     const data = JSON.stringify({buses, schedules, expenses, passwords});
@@ -1766,6 +1793,5 @@ function formatDateDisplay(dateStr) {
     </script>
 </body>
 </html>
-
 
 
