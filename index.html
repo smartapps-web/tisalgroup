@@ -95,16 +95,17 @@
     max-width: 98%; 
     margin: auto; 
 }
-        @media (min-width: 1024px) { 
+@media (min-width: 1024px) { 
     .container { 
-        /* Memberikan porsi lebih besar untuk konten utama (kiri) 
-           dan sisa yang cukup untuk sidebar (kanan) */
-        grid-template-columns: 1.8fr 1.2fr; 
+        /* Kita perbesar porsi Main Content (Kalender) menjadi 2.2fr */
+        grid-template-columns: 2.2fr 0.8fr; 
     } 
 }
-        .sidebar-grid { 
+
+/* Dan pastikan sidebar-grid cuma 1 kolom */
+.sidebar-grid { 
     display: grid; 
-    grid-template-columns: 1fr 1fr; 
+    grid-template-columns: 1fr; 
     gap: 15px; 
     align-items: start;
 }
@@ -334,6 +335,14 @@
                 <div class="sidebar-section">
 <div class="card">
     <h3>📅 Jadwal Terdekat</h3>
+	
+	<div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
+        <button class="btn-gray" style="padding: 4px 10px; font-size: 0.7rem; min-width: 60px;" onclick="setQuickFilter('')">Semua</button>
+        <button class="btn-green" style="padding: 4px 10px; font-size: 0.7rem; min-width: 60px;" onclick="setQuickFilter('Lunas')">Lunas</button>
+        <button class="btn-orange" style="padding: 4px 10px; font-size: 0.7rem; min-width: 60px; background: #ffc107; color: #856404;" onclick="setQuickFilter('DP')">DP</button>
+        <button class="btn-red" style="padding: 4px 10px; font-size: 0.7rem; min-width: 60px;" onclick="setQuickFilter('belum bayar')">Belum</button>
+    </div>
+	
     <div class="filter-box" style="grid-template-columns: 1fr; gap: 10px;">
         <div>
             <label>Cari Nama / HP / Alamat / Tujuan / Nama Bus / Nopol :</label>
@@ -352,12 +361,7 @@
 
 
                 </div>
-                <div class="sidebar-section">
-                    <div class="card">
-                        <h3>💸 Belum Lunas</h3>
-                        <div id="list-unpaid"></div>
-                    </div>
-                </div>
+
             </div>
         </div>
     </div>
@@ -1045,25 +1049,33 @@ schedules.filter(s => s.date === dStr).forEach(s => {
 // --- FUNGSI FILTER & SIDEBAR (REPLACE DI SINI) ---
 function renderSidebar() {
     const up = document.getElementById('list-upcoming');
-    const un = document.getElementById('list-unpaid');
+    if (!up) return; // Proteksi agar tidak error
+
     up.innerHTML = ''; 
-    un.innerHTML = '';
     
-    const searchText = document.getElementById('search-input').value.toLowerCase();
+    const searchInput = document.getElementById('search-input');
+    const searchText = searchInput ? searchInput.value.toLowerCase() : '';
     const fStart = document.getElementById('filter-start').value;
     const fEnd = document.getElementById('filter-end').value;
     const today = new Date().toISOString().split('T')[0];
 
-// FUNGSI PENCARIAN PINTAR (Sekarang bisa baca nama Penginput/Admin)
-    const isSearchMatch = (s) => {
+    // FUNGSI PENCARIAN PINTAR
+const isSearchMatch = (s) => {
         if (!searchText) return true;
         
-        // Ambil data pendukung (Bus & Nama Creator)
         const b = buses.find(x => x.id == s.busId);
         const busName = b ? b.name.toLowerCase() : '';
         const busPlate = b ? b.plate.toLowerCase() : '';
-        const creator = s.createdBy ? s.createdBy.toLowerCase() : ''; // Ambil nama penginput
+        const creator = s.createdBy ? s.createdBy.toLowerCase() : '';
+        const statusBayar = s.status ? s.status.toLowerCase() : '';
 
+        // LOGIKA BARU: Jika kata kunci adalah status (Lunas/DP/Belum), 
+        // maka harus COCOK PERSIS dengan kolom status (bukan alamat/nama)
+        if (['lunas', 'dp', 'belum bayar'].includes(searchText)) {
+            return statusBayar === searchText;
+        }
+
+        // Jika bukan mencari status, jalankan pencarian bebas seperti biasa
         return (
             s.cust.toLowerCase().includes(searchText) || 
             s.trip.toLowerCase().includes(searchText) || 
@@ -1071,11 +1083,11 @@ function renderSidebar() {
             s.phone.includes(searchText) ||
             busName.includes(searchText) || 
             busPlate.includes(searchText) ||
-            creator.includes(searchText) // <-- INI DIA: Biar bisa cari nama Dani/Agus/Admin
+            creator.includes(searchText)
         );
     };
 
-    // 1. Filter untuk JADWAL TERDEKAT
+    // Filter hanya untuk JADWAL TERDEKAT
     let upcomingData = schedules.filter(s => {
         const matchSearch = isSearchMatch(s);
         let matchDate = (fStart && fEnd) ? (s.date >= fStart && s.date <= fEnd) : (s.date >= today);
@@ -1084,11 +1096,6 @@ function renderSidebar() {
 
     upcomingData.sort((a, b) => a.date.localeCompare(b.date))
         .forEach(s => up.innerHTML += createCardHtml(s, false));
-
-    // 2. Filter untuk BELUM LUNAS
-    schedules.filter(s => s.status !== 'Lunas' && isSearchMatch(s))
-        .sort((a, b) => a.date.localeCompare(b.date))
-        .forEach(s => un.innerHTML += createCardHtml(s, true));
 }
 
 
@@ -1792,6 +1799,14 @@ function formatDateDisplay(dateStr) {
     if (!dateStr) return "-";
     const [year, month, day] = dateStr.split('-');
     return `${day}/${month}/${year}`;
+}
+
+function setQuickFilter(status) {
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) {
+        searchInput.value = status; 
+        renderSidebar(); // Memanggil fungsi pencarian
+    }
 }
 
     </script>
