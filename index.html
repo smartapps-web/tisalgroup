@@ -630,6 +630,9 @@ function printSuratJalan(id) {
     const s = schedules.find(x => x.id == id), b = buses.find(x => x.id == s.busId);
     if (!s) return;
     
+    // URL LOGO DARI GITHUB (Ganti 'nama-user' dan 'nama-repo' sesuai akunmu)
+    const logoUrl = "https://raw.githubusercontent.com/smartapps-web/tisalgroup/main/tisal_logo_transp.png";
+
     const pWin = window.open('', '_blank');
     pWin.document.write(`
     <html>
@@ -637,7 +640,18 @@ function printSuratJalan(id) {
         <title>Surat_Jalan_${s.cust}</title>
         <style>
             body { font-family: sans-serif; padding: 30px; line-height: 1.4; color: #333; }
-            .header { text-align: center; border-bottom: 2px double #000; padding-bottom: 10px; margin-bottom: 20px; }
+            .header { 
+                display: flex; 
+                align-items: center; 
+                border-bottom: 3px solid #000; 
+                padding-bottom: 10px; 
+                margin-bottom: 20px; 
+            }
+            .logo { width: 80px; height: auto; margin-right: 20px; }
+            .header-text { flex-grow: 1; }
+            .header-text h1 { margin: 0; font-size: 24px; color: #000; }
+            .header-text p { margin: 2px 0; font-size: 12px; color: #444; }
+            
             .content-table { width: 100%; margin-bottom: 20px; border-collapse: collapse; }
             .content-table td { padding: 8px; vertical-align: top; border-bottom: 1px solid #eee; }
             .ops-box { border: 1px solid #000; padding: 15px; background: #f9f9f9; margin: 20px 0; }
@@ -649,23 +663,31 @@ function printSuratJalan(id) {
     </head>
     <body>
         <div class="header">
-            <h1 style="margin:0">TISAL GROUP</h1>
-            <h3 style="margin:5px 0">SURAT JALAN OPERASIONAL DRIVER</h3>
+            <img src="${logoUrl}" class="logo" alt="Logo Tisal">
+            <div class="header-text">
+                <h1>TISAL GROUP</h1>
+                <p>Sistem Manajemen Bus Pariwisata & Transportasi</p>
+                <p>Jl. Raya Krajan - Semin, Gunungkidul, DIY</p>
+            </div>
+            <div style="text-align: right;">
+                <h3 style="margin: 0; color: #444;">SURAT JALAN</h3>
+                <p style="margin: 0; font-size: 11px;">No: SJ/${s.id}</p>
+            </div>
         </div>
 
         <table class="content-table">
-            <tr><td width="180"><b>Tujuan Trip</b></td><td>: ${s.trip}</td></tr>
-            <tr><td><b>Hari / Tanggal</b></td><td>: ${new Date(s.date).toLocaleDateString('id-ID', {weekday:'long', day:'2-digit', month:'long', year:'numeric'})}</td></tr>
-            <tr><td><b>Jam Standby</b></td><td>: ${s.time || '-'} WIB</td></tr>
-            <tr><td><b>Unit Armada</b></td><td>: ${b?.name || '-'} (${b?.plate || '-'})</td></tr>
-            <tr><td><b>Kapasitas</b></td><td>: ${s.seats || '-'} Seat</td></tr>
-			<tr><td><b>Fasilitas</b></td><td>: ${[b?.features, s.extraFeatures].filter(x => x).join(', ') || '-'}</td></tr>
-            <tr><td><b>Titik Jemput</b></td><td>: ${s.pickup || '-'}</td></tr>
-            <tr><td><b>Nama Pemesan</b></td><td>: ${s.cust} (${s.phone})</td></tr>
+            <tr><td width="180"><b>Tujuan Trip</b></td><td>:&nbsp; ${s.trip}</td></tr>
+            <tr><td><b>Hari / Tanggal</b></td><td>:&nbsp; ${new Date(s.date).toLocaleDateString('id-ID', {weekday:'long', day:'2-digit', month:'long', year:'numeric'})}</td></tr>
+            <tr><td><b>Jam Standby</b></td><td>:&nbsp; ${s.time || '-'} WIB</td></tr>
+            <tr><td><b>Unit Armada</b></td><td>:&nbsp; ${b?.name || '-'} (${b?.plate || '-'})</td></tr>
+            <tr><td><b>Kapasitas</b></td><td>:&nbsp; ${s.seats || '-'} Seat</td></tr>
+            <tr><td><b>Fasilitas</b></td><td>:&nbsp; ${[b?.features, s.extraFeatures].filter(x => x).join(', ') || '-'}</td></tr>
+            <tr><td><b>Titik Jemput</b></td><td>:&nbsp; ${s.pickup || '-'}</td></tr>
+            <tr><td><b>Nama Pemesan</b></td><td>:&nbsp; ${s.cust} (${s.phone})</td></tr>
         </table>
 
         <div class="ops-box">
-            <h4 style="margin-top:0; border-bottom: 1px solid #000; padding-bottom:5px;">RINCIAN BIAYA OPERASIONAL</h4>
+            <h4 style="margin-top:0; border-bottom: 1px solid #000; padding-bottom:5px;">RINCIAN BIAYA OPERASIONAL (UANG JALAN)</h4>
             <table class="ops-table">
                 <tr><td>Uang Solar / BBM</td><td align="right">Rp ${(s.fuel || 0).toLocaleString('id-ID')}</td></tr>
                 <tr><td>Uang Tol & Parkir</td><td align="right">Rp ${(s.toll || 0).toLocaleString('id-ID')}</td></tr>
