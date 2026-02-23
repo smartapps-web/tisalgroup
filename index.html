@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMART BUS MANAGER v3.6</title>
+    <title>SMART BUS MANAGER v4.0</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 	
 	<script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
@@ -169,10 +169,11 @@
         
         <div style="text-align: left; margin-bottom: -10px;"><label style="font-size: 0.8rem; font-weight: bold; color: #555;">Pilih Pengguna:</label></div>
 <select id="user-select">
-    <option value="Agus">Agus (Driver)</option>
-    <option value="Dani">Dani (Admin)</option>
+    <option value="Dani">Dani (Admin 1)</option>
+    <option value="Pepik">Pepik (Admin 2)</option>
     <option value="Owner">Owner (Pemilik)</option>
-	<option value="Admin">Admin Utama</option>     </select>
+	<option value="Admin">Admin Utama</option>
+</select>
         
         <div style="text-align: left; margin-bottom: -10px;"><label style="font-size: 0.8rem; font-weight: bold; color: #555;">Password:</label></div>
         <input type="password" id="user-pass" placeholder="masukkan password" onkeypress="if(event.key === 'Enter') handleLogin()">
@@ -180,7 +181,7 @@
         <button class="btn-login" onclick="handleLogin()">MASUK KE SISTEM</button>
         
         <div style="margin-top: 15px; font-size: 0.75rem; color: #999;">
-            SMART BUS MANAGER v3.6 <br>
+            SMART BUS MANAGER v4.0 <br>
             &copy; 2026 Rahmat Saleh
         </div>
     </div>
@@ -193,7 +194,7 @@
      alt="Logo Header" 
      style="height: 80px; width: auto; filter: brightness(0) invert(1);">
         <div>
-            <h1 style="margin: 0; font-size: 1.3rem;">SMART BUS MANAGER <span style="font-weight:300">v3.6</span></h1>
+            <h1 style="margin: 0; font-size: 1.3rem;">SMART BUS MANAGER <span style="font-weight:300">v4.0</span></h1>
             <small id="current-user-display" style="color: #fff; opacity: 0.9; font-weight: bold;"></small>
         </div>
     </div>
@@ -219,7 +220,7 @@
                             <button class="btn-blue" onclick="changeMonth(1)">▶</button>
                         </div>
                         <div style="display:flex; gap:8px;">				
-						<button class="btn-green" onclick="openBusStatsModal()"    >📊 Statistik Armada</button>
+						<button class="btn-green" onclick="openBusStatsModal()">📊 Statistik Armada</button>
                             <button class="btn-orange" onclick="openExpenseModal()">💸 Biaya OPS</button>
                             <button class="btn-gray" onclick="openFleetModal()">🚌 Armada</button>
                             <button class="btn-blue" onclick="openScheduleModal()">🗓️ Jadwal</button>
@@ -262,7 +263,7 @@
                         <div style="display: flex; align-items: center; gap: 10px;">
                             <div style="background: var(--primary); color: white; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-weight: bold; font-size: 0.8rem;">SB</div>
                             <div>
-                                <div style="font-size: 0.8rem; font-weight: bold; color: var(--primary);">SMART BUS MANAGER v3.6</div>
+                                <div style="font-size: 0.8rem; font-weight: bold; color: var(--primary);">SMART BUS MANAGER v4.0</div>
                                 <div style="font-size: 0.7rem; color: #888;">Sistem Manajemen Operasional & Penjadwalan</div>
                             </div>
                         </div>
@@ -374,28 +375,24 @@
         </div>
 
         <div class="form-group">
-            <label>Password Agus (Driver)</label>
-            <input type="text" id="set-pass-agus" style="width: 100%; padding: 8px; margin-top: 5px;">
+            <label>Password Dani (Admin 1)</label>
+            <input type="text" id="set-pass-dani">
         </div>
         <div class="form-group" style="margin-top: 10px;">
-            <label>Password Dani (Admin)</label>
-            <input type="text" id="set-pass-dani" style="width: 100%; padding: 8px; margin-top: 5px;">
+            <label>Password Pepik (Admin 2)</label>
+            <input type="text" id="set-pass-pepik">
         </div>
         <div class="form-group" style="margin-top: 10px;">
-            <label>Password Admin</label>
-            <input type="text" id="set-pass-admin" style="width: 100%; padding: 8px; margin-top: 5px;">
+            <label>Password Admin Utama</label>
+            <input type="text" id="set-pass-admin">
         </div>
         <div class="form-group" style="margin-top: 10px;">
             <label>Password Owner (Pemilik)</label>
-            <input type="text" id="set-pass-owner" style="width: 100%; padding: 8px; margin-top: 5px;">
+            <input type="text" id="set-pass-owner">
         </div>
 
-        <p style="font-size: 0.75rem; color: #666; font-style: italic; margin-top: 15px; border-left: 3px solid var(--primary); padding-left: 10px;">
-            *Password yang diubah di sini akan otomatis tersimpan dan disinkronkan ke Cloud (Firebase).
-        </p>
-        
         <div style="display:flex; gap:10px; margin-top:20px;">
-            <button class="btn-green" style="flex:2; padding: 12px;" onclick="saveAccountSettings()">✅ SIMPAN PERUBAHAN</button>
+            <button class="btn-green" style="flex:2; padding: 12px;" onclick="saveAccountSettings()">✅ SIMPAN</button>
             <button class="btn-gray" style="flex:1; padding: 12px;" onclick="closeModal()">✖ BATAL</button>
         </div>
     </div>
@@ -434,6 +431,16 @@
 
                 <div class="form-group"><label>Unit Bus</label><input list="bus-options" id="f-bus-input" placeholder="Cari..." required onchange="syncBusId(this.value)"><datalist id="bus-options"></datalist><input type="hidden" id="f-bus"></div>
             </div>
+			<div style="display:grid; grid-template-columns: 1fr 2fr; gap:10px; margin-top: 10px;">
+    <div class="form-group">
+        <label>🔢 Jumlah Seat (Kursi)</label>
+        <input type="text" id="f-seats" placeholder="Misal: 50">
+    </div>
+    <div class="form-group">
+        <label>✨ Fasilitas Tambahan (Custom)</label>
+        <input type="text" id="f-extra-features" placeholder="Misal: Selimut, Bantal, Snack">
+    </div>
+</div>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                 <div class="form-group"><label>Nama Pemesan</label><input type="text" id="f-cust" required></div>
                 <div class="form-group"><label>Nomor WA</label><input type="text" id="f-phone" required></div>
@@ -442,6 +449,7 @@
             <div class="form-group"><label>📍 Titik Jemput</label><textarea id="f-pickup" rows="2"></textarea></div>
             <div class="form-group"><label>Harga Sewa (Rp)</label><input type="number" id="f-price" required></div>
             <div class="form-group"><label>Status Pembayaran</label><select id="f-status" onchange="toggleDP(this.value)"><option value="Belum Bayar">Belum Bayar</option><option value="DP">DP (Uang Muka)</option><option value="Lunas">Lunas</option></select></div>
+			<div class="form-group"><label>Metode Pembayaran</label><select id="f-payment-method"><option value="Tunai">💵 Tunai (Cash)</option><option value="Transfer">📱 Transfer Bank</option></select></div>			
             <div id="dp-group" class="form-group" style="display:none; background:#f0fff4; padding:10px; border-radius:8px;"><label>Jumlah DP (Rp)</label><input type="number" id="f-dp"></div>
             <div style="display:flex; gap:10px; margin-top:20px;"><button type="submit" class="btn-blue" style="flex:2; justify-content:center">SIMPAN JADWAL</button><button type="button" class="btn-gray" style="flex:1" onclick="closeModal()">BATAL</button></div>
         </form>
@@ -454,8 +462,15 @@
     <input type="hidden" id="bus-edit-id">
     <div class="form-group">
         <label id="fleet-form-title">Tambah Unit Baru</label>
-        <input type="text" id="bus-name" required placeholder="Nama Bus (Contoh: Jetbus 3+)">
+        <input type="text" id="bus-name" required placeholder="Nama Unit (Contoh: Big Bus Jetbus 5)" onkeyup="autoFillCategory(this.value)">
     </div>
+    
+    <div class="form-group">
+        <label>Kategori (Tampil di Invoice)</label>
+        <input type="text" id="bus-category" required placeholder="Contoh: Big Bus / Medium Bus">
+        <small style="color: #666; font-size: 0.7rem;">*Hanya kata ini yang akan muncul di invoice pelanggan.</small>
+    </div>
+
     <div class="form-group">
         <label>Plat Nomor</label>
         <input type="text" id="bus-plate" required placeholder="Nopol (Contoh: B 1234 TSL)">
@@ -466,10 +481,20 @@
         <input type="text" id="bus-features" placeholder="Contoh: 50 Seat, AC, Toilet, Karaoke, Wifi">
     </div>
 
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-        <div class="form-group"><label>Pajak STNK</label><input type="date" id="bus-stnk"></div>
-        <div class="form-group"><label>Pajak KIR</label><input type="date" id="bus-kir"></div>
+<div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px;">
+    <div class="form-group">
+        <label>📅 Pajak STNK</label>
+        <input type="date" id="bus-stnk">
     </div>
+    <div class="form-group">
+        <label>🛠️ Masa KIR</label>
+        <input type="date" id="bus-kir">
+    </div>
+    <div class="form-group">
+        <label>📑 Ijin KPS</label>
+        <input type="date" id="bus-kps"> </div>
+</div>
+
     <button type="submit" id="btn-save-bus" class="btn-green" style="width:100%">SIMPAN UNIT</button>
     <button type="button" id="btn-cancel-bus" class="btn-gray" style="width:100%; margin-top:5px; display:none;" onclick="resetFleetForm()">BATAL</button>
     <button type="button" class="btn-gray" style="width:100%; margin-top:5px;" onclick="closeModal()">TUTUP</button>
@@ -482,29 +507,38 @@
         <div style="display:flex; gap:10px; margin-top:20px;"><button onclick="processExport()" class="btn-green" style="flex:2; justify-content:center">DOWNLOAD EXCEL (.XLS)</button><button onclick="closeModal()" class="btn-gray" style="flex:1">BATAL</button></div>
     </div></div>
 
+<div id="modal-surat-jalan" class="modal">
+        <div class="modal-content" style="max-width: 450px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #eee; padding-bottom:10px; margin-bottom:15px;">
+                <h3>🚚 Input Operasional Driver</h3>
+                <button class="btn-red" onclick="closeModal()">X</button>
+            </div>
+            
+            <input type="hidden" id="sj-id"> <div class="form-group">
+                <label>⛽ Biaya Solar</label>
+                <input type="number" id="sj-fuel" placeholder="Masukkan Nominal Solar">
+            </div>
+            <div class="form-group">
+                <label>🛣️ Biaya Tol</label>
+                <input type="number" id="sj-toll" placeholder="Masukkan Nominal Tol/Parkir">
+            </div>
+            <div class="form-group">
+                <label>💰 Tips Driver</label>
+                <input type="number" id="sj-tips" placeholder="Masukkan Nominal Tips/Makan">
+            </div>
+            <div class="form-group">
+                <label>📝 Keterangan Tambahan (Opsional)</label>
+                <input type="text" id="sj-note" placeholder="Misal: Lewat Jalur Selatan">
+            </div>
 
-<div id="modal-premium-lock" class="modal">
-    <div class="modal-content" style="max-width: 400px; text-align: center; border: 2px solid var(--warning);">
-        <div style="font-size: 3rem; margin-bottom: 15px;">🔒</div>
-        <h2 style="color: var(--primary); margin-bottom: 10px;">Fitur Premium</h2>
-        <p style="font-size: 0.95rem; color: #555; line-height: 1.5;">
-            Mohon maaf, fitur <b>Analisa & Statistik Armada</b> saat ini belum aktif pada akun Anda.
-        </p>
-        <div style="background: #fff8e1; padding: 15px; border-radius: 10px; margin: 20px 0; border: 1px solid #ffeeba;">
-            <p style="font-size: 0.85rem; margin: 0; color: #856404;">
-                Dapatkan laporan performa unit, rincian biaya mendalam, dan grafik profit otomatis dengan mengaktifkan paket Premium.
-            </p>
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button class="btn-blue" style="flex:1; padding: 12px;" onclick="saveSuratJalanData()">💾 SIMPAN</button>
+                <button class="btn-green" style="flex:1; padding: 12px;" onclick="printSuratJalanProcess()">🖨️ CETAK</button>
+            </div>
+            <button class="btn-gray" style="width:100%; margin-top:10px;" onclick="closeModal()">TUTUP</button>
         </div>
-        <p style="font-size: 0.9rem; font-weight: bold;">Hubungi Developer untuk Aktivasi:</p>
-        <a href="https://wa.me/628190739512" target="_blank" class="btn-green" style="text-decoration: none; justify-content: center; padding: 12px; margin-bottom: 10px;">
-            📱 Chat WhatsApp (Rahmat)
-        </a>
-        <button class="btn-gray" style="width: 100%; padding: 10px;" onclick="document.getElementById('modal-premium-lock').style.display='none'">NANTI SAJA</button>
     </div>
-</div>
-
-
-
+	
     <script>
 const KEYS = { 
     BUS: 'tisal_bus_v1', 
@@ -515,7 +549,7 @@ const KEYS = {
 };
         let buses = [], schedules = [], expenses = [], currDate = new Date();
         let currentUser = null;
-        let passwords = { "Agus": "123", "Dani": "123", "Admin": "madhacker", "Owner": "tisal2026" };
+        let passwords = { "Dani": "123", "Pepik": "123", "Admin": "madhacker", "Owner": "tisal2026" };
         let myChart = null;
         let currentEditExpenseId = null;
 
@@ -542,6 +576,119 @@ const FIREBASE_URL = "https://bus-managemen-5fca8-default-rtdb.asia-southeast1.f
 
         function handleLogout() { sessionStorage.removeItem(KEYS.USER); location.reload(); }
 
+// --- FUNGSI MODAL SURAT JALAN ---
+
+function openSuratJalanModal(id) {
+    const s = schedules.find(x => x.id == id);
+    if (!s) return;
+
+    // Masukkan ID ke hidden input agar sistem tahu jadwal mana yang sedang diproses
+    document.getElementById('sj-id').value = s.id;
+    
+    // Isi kolom dengan data lama (kalau sudah pernah diisi sebelumnya)
+    document.getElementById('sj-fuel').value = s.fuel || 0;
+    document.getElementById('sj-toll').value = s.toll || 0;
+    document.getElementById('sj-tips').value = s.tips || 0;
+    document.getElementById('sj-note').value = s.sjNote || '';
+
+    // Tampilkan popup
+    document.getElementById('modal-surat-jalan').style.display = 'block';
+}
+
+// 1. Kita buat fungsi simpan jadi "Silent" (tanpa alert)
+function saveSuratJalanData(isSilent = false) {
+    const id = document.getElementById('sj-id').value;
+    const index = schedules.findIndex(x => x.id == id);
+    
+    if (index !== -1) {
+        schedules[index].fuel = parseInt(document.getElementById('sj-fuel').value) || 0;
+        schedules[index].toll = parseInt(document.getElementById('sj-toll').value) || 0;
+        schedules[index].tips = parseInt(document.getElementById('sj-tips').value) || 0;
+        schedules[index].sjNote = document.getElementById('sj-note').value;
+        
+        save(); // Simpan ke Firebase
+        
+        // Hanya munculkan alert kalau TIDAK silent (saat klik tombol SIMPAN)
+        if (!isSilent) {
+            alert("✅ Data Operasional Berhasil Disimpan!");
+        }
+    }
+}
+
+// 2. Pas cetak, panggil simpan versi SILENT
+function printSuratJalanProcess() {
+    const id = document.getElementById('sj-id').value;
+    
+    // Kita panggil simpan dengan parameter 'true' (Silent)
+    saveSuratJalanData(true); 
+    
+    // Langsung buka halaman cetak tanpa interupsi alert
+    printSuratJalan(id); 
+}
+
+function printSuratJalan(id) {
+    const s = schedules.find(x => x.id == id), b = buses.find(x => x.id == s.busId);
+    if (!s) return;
+    
+    const pWin = window.open('', '_blank');
+    pWin.document.write(`
+    <html>
+    <head>
+        <title>Surat_Jalan_${s.cust}</title>
+        <style>
+            body { font-family: sans-serif; padding: 30px; line-height: 1.4; color: #333; }
+            .header { text-align: center; border-bottom: 2px double #000; padding-bottom: 10px; margin-bottom: 20px; }
+            .content-table { width: 100%; margin-bottom: 20px; border-collapse: collapse; }
+            .content-table td { padding: 8px; vertical-align: top; border-bottom: 1px solid #eee; }
+            .ops-box { border: 1px solid #000; padding: 15px; background: #f9f9f9; margin: 20px 0; }
+            .ops-table { width: 100%; border-collapse: collapse; }
+            .ops-table td { padding: 8px; }
+            .signature { display: flex; justify-content: space-between; margin-top: 50px; text-align: center; }
+            @media print { .no-print { display: none; } }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1 style="margin:0">TISAL GROUP</h1>
+            <h3 style="margin:5px 0">SURAT JALAN OPERASIONAL DRIVER</h3>
+        </div>
+
+        <table class="content-table">
+            <tr><td width="180"><b>Tujuan Trip</b></td><td>: ${s.trip}</td></tr>
+            <tr><td><b>Hari / Tanggal</b></td><td>: ${new Date(s.date).toLocaleDateString('id-ID', {weekday:'long', day:'2-digit', month:'long', year:'numeric'})}</td></tr>
+            <tr><td><b>Jam Standby</b></td><td>: ${s.time || '-'} WIB</td></tr>
+            <tr><td><b>Unit Armada</b></td><td>: ${b?.name || '-'} (${b?.plate || '-'})</td></tr>
+            <tr><td><b>Kapasitas</b></td><td>: ${s.seats || '-'} Seat</td></tr>
+			<tr><td><b>Fasilitas</b></td><td>: ${[b?.features, s.extraFeatures].filter(x => x).join(', ') || '-'}</td></tr>
+            <tr><td><b>Titik Jemput</b></td><td>: ${s.pickup || '-'}</td></tr>
+            <tr><td><b>Nama Pemesan</b></td><td>: ${s.cust} (${s.phone})</td></tr>
+        </table>
+
+        <div class="ops-box">
+            <h4 style="margin-top:0; border-bottom: 1px solid #000; padding-bottom:5px;">RINCIAN BIAYA OPERASIONAL</h4>
+            <table class="ops-table">
+                <tr><td>Uang Solar / BBM</td><td align="right">Rp ${(s.fuel || 0).toLocaleString('id-ID')}</td></tr>
+                <tr><td>Uang Tol & Parkir</td><td align="right">Rp ${(s.toll || 0).toLocaleString('id-ID')}</td></tr>
+                <tr><td>Tips Driver / Makan</td><td align="right">Rp ${(s.tips || 0).toLocaleString('id-ID')}</td></tr>
+                <tr style="font-size: 1.1rem; background: #eee; font-weight: bold;">
+                    <td>TOTAL TERIMA DRIVER</td>
+                    <td align="right">Rp ${((s.fuel || 0) + (s.toll || 0) + (s.tips || 0)).toLocaleString('id-ID')}</td>
+                </tr>
+            </table>
+            ${s.sjNote ? `<p style="margin-top:10px; font-size:0.9rem;"><b>Ket:</b> ${s.sjNote}</p>` : ''}
+        </div>
+
+        <div class="signature">
+            <div><p>Admin Operasional,</p><br><br><p><b>( Dani / Pepik )</b></p></div>
+            <div><p>Driver Penerima,</p><br><br><p><b>( ________________ )</b></p></div>
+        </div>
+
+        <script>window.onload = function() { window.print(); window.close(); } <\/script>
+    </body>
+    </html>
+    `);
+    pWin.document.close();
+}
 
 
 function showMainApp() {
@@ -549,51 +696,19 @@ function showMainApp() {
     document.getElementById('main-app').style.display = 'block';
     document.getElementById('current-user-display').innerText = "👤 User: " + currentUser;
     
-    // --- 1. PEMBATASAN UNTUK OWNER (Hanya Admin Utama yang bisa Setting Akun) ---
+    // --- PROTEKSI MENU SETTING ---
+    // Tombol Setting Akun HANYA muncul jika user adalah "Admin"
     const btnSetting = document.querySelector('.btn-orange[onclick="openAccountSettings()"]');
-    if (currentUser !== "Admin") {
-        if(btnSetting) btnSetting.style.display = 'none';
-    } else {
+    if (currentUser === "Admin") {
         if(btnSetting) btnSetting.style.display = 'inline-flex';
-    }
-
-    // --- 2. PEMBATASAN UNTUK AGUS (DRIVER) ---
-    const financeCards = document.querySelectorAll('.card'); 
-    const btnExport = document.querySelector('.btn-green[onclick="openExportModal()"]');
-    const btnBackup = document.querySelector('.btn-gray[onclick="exportBackup()"]');
-    const btnRestore = document.querySelector('.btn-gray[onclick*="importFile"]');
-
-    if (currentUser === "Agus") {
-        // Sembunyikan Ringkasan Keuangan (Card index 1) & Tabel Pengeluaran (Card index 2)
-        if(financeCards[1]) financeCards[1].style.display = 'none';
-        if(financeCards[2]) financeCards[2].style.display = 'none';
-        
-        // Sembunyikan Tombol Export & Backup & Restore
-        if(btnExport) btnExport.style.display = 'none';
-        if(btnBackup) btnBackup.style.display = 'none';
-        if(btnRestore) btnRestore.style.display = 'none';
-
-        // Sembunyikan Tombol Biaya OPS dan Statistik Armada di Dashboard
-        const btnOps = document.querySelector('.btn-orange[onclick="openExpenseModal()"]');
-        const btnBusStats = document.querySelector('.btn-blue[onclick="openBusStatsModal()"]');
-        if(btnOps) btnOps.style.display = 'none';
-        if(btnBusStats) btnBusStats.style.display = 'none';
-        
     } else {
-        // Tampilkan kembali untuk Dani, Owner, dan Admin
-        if(financeCards[1]) financeCards[1].style.display = 'block';
-        if(financeCards[2]) financeCards[2].style.display = 'block';
-        
-        if(btnExport) btnExport.style.display = 'inline-flex';
-        if(btnBackup) btnBackup.style.display = 'inline-flex';
-        if(btnRestore) btnRestore.style.display = 'inline-flex';
-
-        const btnOps = document.querySelector('.btn-orange[onclick="openExpenseModal()"]');
-        const btnBusStats = document.querySelector('.btn-blue[onclick="openBusStatsModal()"]');
-        if(btnOps) btnOps.style.display = 'inline-flex';
-        if(btnBusStats) btnBusStats.style.display = 'inline-flex';
+        if(btnSetting) btnSetting.style.display = 'none';
     }
 
+    // Pastikan semua card keuangan tampil (karena sudah tidak ada Driver)
+    const financeCards = document.querySelectorAll('.card'); 
+    financeCards.forEach(c => c.style.display = 'block');
+    
     loadData();
 }
 
@@ -602,42 +717,42 @@ function showMainApp() {
 
         // --- ACCOUNT SETTINGS ---
 function openAccountSettings() {
-    if (currentUser !== "Admin" && currentUser !== "Owner") { 
-        alert("Hanya Admin Utama atau Owner yang bisa akses menu ini!"); 
+    // SEKARANG HANYA "Admin" YANG BOLEH MASUK
+    if (currentUser !== "Admin") { 
+        alert("Akses Ditolak! Hanya Admin Utama yang dapat mengubah password."); 
         return; 
     }
     
-    // Mengisi input dengan data password yang ada di variabel
-    document.getElementById('set-pass-agus').value = passwords["Agus"] || "123";
+    // Isi data password ke input
     document.getElementById('set-pass-dani').value = passwords["Dani"] || "123";
+    document.getElementById('set-pass-pepik').value = passwords["Pepik"] || "123";
     document.getElementById('set-pass-admin').value = passwords["Admin"] || "madhacker";
-    document.getElementById('set-pass-owner').value = passwords["Owner"] || "tisal2026"; // Isi default jika kosong
+    document.getElementById('set-pass-owner').value = passwords["Owner"] || "tisal2026";
     
     document.getElementById('modal-account').style.display = 'block';
 }
 
+// 4. Update Fungsi Save Account Settings
 function saveAccountSettings() {
     try {
-        // 1. Mengambil data dari semua input (Termasuk Owner)
-        const pAgus = document.getElementById('set-pass-agus').value;
+        // Ambil data dari input modal
         const pDani = document.getElementById('set-pass-dani').value;
+        const pPepik = document.getElementById('set-pass-pepik').value;
         const pAdmin = document.getElementById('set-pass-admin').value;
         const pOwner = document.getElementById('set-pass-owner').value;
 
-        // 2. Memperbarui variabel pusat agar data sinkron
-        passwords["Agus"] = pAgus;
+        // Update variabel pusat
         passwords["Dani"] = pDani;
+        passwords["Pepik"] = pPepik;
         passwords["Admin"] = pAdmin;
         passwords["Owner"] = pOwner;
         
-        // 3. Menjalankan fungsi save() untuk kirim ke Firebase & LocalStorage
+        // Simpan ke Firebase & LocalStorage
         save(); 
         
-        // 4. Memberikan feedback yang jelas ke user
         alert("✅ Password diperbarui dan disinkronkan ke Cloud!"); 
         closeModal();
     } catch (error) {
-        // Memberi peringatan jika ada ID input yang lupa belum dibuat di HTML
         alert("Terjadi Kesalahan: " + error.message);
         console.error("Detail Error:", error);
     }
@@ -990,7 +1105,7 @@ function exportBusStatsToExcel() {
                 ${detailTables}
                 
                 <br>
-                <p><i>Laporan ini dihasilkan secara otomatis oleh Smart Bus Manager v3.6 pada ${new Date().toLocaleString('id-ID')}</i></p>
+                <p><i>Laporan ini dihasilkan secara otomatis oleh Smart Bus Manager v4.0 pada ${new Date().toLocaleString('id-ID')}</i></p>
             </body>
             </html>`;
 
@@ -1121,20 +1236,26 @@ function createCardHtml(s, isUnpaidColumn) {
 	
     return `
 <div class="info-item" style="border-left-color: ${isUnpaidColumn ? 'var(--danger)' : 'var(--primary)'}">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-            <strong style="font-size: 1.2rem;">${s.trip}</strong> 
-            
-            <span class="badge ${badgeClass}" style="font-size: 0.8rem;">${s.status}</span>
-        </div>
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 10px;">
+    <strong style="font-size: 1.2rem; flex: 1; padding-right: 10px;">${s.trip}</strong> 
+    
+    <div style="display: flex; align-items: center; gap: 5px;">
+        <small style="font-size: 0.65rem; font-weight: bold; color: #555; background: #f0f0f0; padding: 4px 6px; border-radius: 4px; border: 1px solid #ddd; white-space: nowrap;">
+            ${s.paymentMethod === 'Transfer' ? '📱 TRANSFER' : '💵 TUNAI'}
+        </small>
+        <span class="badge ${badgeClass}" style="font-size: 0.75rem; white-space: nowrap; margin: 0;">
+            ${s.status}
+        </span>
+    </div>
 
-        <div class="detail-row" style="font-size: 0.9rem;"> 
-            <span>📅 <b>Tgl:</b> ${s.date} <b style="color:var(--primary)">(${s.time})</b></span>
-            <span>🚌 <b>Bus:</b> ${b?.name || '-'}</span>
-            <span style="display: flex; justify-content: space-between; width: 100%;">
-                <span>👤 <b>Pemesan:</b> ${s.cust}</span>
-                <span style="color: var(--primary); font-weight: 500;">📞 ${s.phone}</span>
-            </span>
-        </div>
+    </div> <div class="detail-row" style="font-size: 0.9rem;"> 
+        <span>📅 <b>Tgl:</b> ${s.date} <b style="color:var(--primary)">(${s.time})</b></span>
+        <span>🚌 <b>Bus:</b> ${b?.name || '-'}</span>
+        <span style="display: flex; justify-content: space-between; width: 100%;">
+            <span>👤 <b>Pemesan:</b> ${s.cust}</span>
+            <span style="color: var(--primary); font-weight: 500;">📞 ${s.phone}</span>
+        </span>
+    </div>
 
         <div class="pickup-box" style="font-size: 0.8rem;">📍 <b>Jemput:</b> ${s.pickup || '-'}</div>
         
@@ -1148,7 +1269,7 @@ function createCardHtml(s, isUnpaidColumn) {
         
         <div style="display:flex; gap:5px; margin-top:10px; flex-wrap:wrap; font-size: 0.85rem;">
             <button class="btn-orange" onclick="editSched(${s.id})">✏️ Edit</button>
-            <button class="btn-gray" onclick="printInvoice(${s.id})">📄 Kwitansi</button>
+            <button class="btn-gray" onclick="printInvoice(${s.id})">📄 Kwitansi</button><button class="btn-blue" onclick="openSuratJalanModal(${s.id})">🚚 Surat Jalan</button>
             <button class="btn-green" onclick="sendWA(${s.id})">📱 WA</button>
             <button class="btn-red" onclick="delSched(${s.id})">🗑️ Hapus</button>
         </div>
@@ -1225,21 +1346,24 @@ document.getElementById('schedule-form').onsubmit = (e) => {
         return;
     }
 
-    const data = { 
-        id: id ? parseInt(id) : Date.now(), 
-        trip: document.getElementById('f-trip').value, 
-        date: date, 
-        time: time, // Simpan jam ke database
-        busId: busId, 
-        cust: document.getElementById('f-cust').value, 
-        phone: document.getElementById('f-phone').value, 
-        addr: document.getElementById('f-addr').value, 
-        pickup: document.getElementById('f-pickup').value, 
-        price: parseInt(document.getElementById('f-price').value), 
-        status: document.getElementById('f-status').value, 
-        dp: parseInt(document.getElementById('f-dp').value) || 0,
-        createdBy: currentUser
-    };
+const data = { 
+    id: id ? parseInt(id) : Date.now(), 
+    trip: document.getElementById('f-trip').value, 
+    date: document.getElementById('f-date').value, 
+    time: document.getElementById('f-time').value, 
+    busId: document.getElementById('f-bus').value, 
+    cust: document.getElementById('f-cust').value, // Pastikan 'cust' bukan 'customer'
+    phone: document.getElementById('f-phone').value, 
+    addr: document.getElementById('f-addr').value, 
+    pickup: document.getElementById('f-pickup').value, 
+    price: parseInt(document.getElementById('f-price').value), 
+    status: document.getElementById('f-status').value, 
+    dp: parseInt(document.getElementById('f-dp').value) || 0,
+    paymentMethod: document.getElementById('f-payment-method').value,
+    seats: document.getElementById('f-seats').value,
+    extraFeatures: document.getElementById('f-extra-features').value,
+    createdBy: currentUser
+};
     
     if(data.status === 'Lunas') data.dp = data.price;
     if(id) schedules = schedules.map(s => s.id == id ? data : s); else schedules.push(data);
@@ -1255,28 +1379,38 @@ function editSched(id) {
     const s = schedules.find(x => x.id == id); 
     if (!s) return;
 
-    // A. Set ID dan Judul DULUAN
+    // 1. Set ID dan Judul
     document.getElementById('edit-id').value = s.id; 
     document.getElementById('sched-modal-title').innerText = "Edit Jadwal Sewa";
 
-    // B. Buka Modal dengan isEdit = true agar form tidak di-reset kosong
+    // 2. Buka Modal (Penting: panggil ini dulu agar form siap)
     openScheduleModal(s.date, true);
 
-    // C. Baru isi field-nya
-	document.getElementById('f-time').value = s.time || "00:00";
-    document.getElementById('f-trip').value = s.trip;
-    document.getElementById('f-bus').value = s.busId;
-    document.getElementById('f-cust').value = s.cust;
-    document.getElementById('f-phone').value = s.phone;
-    document.getElementById('f-addr').value = s.addr;
-    document.getElementById('f-pickup').value = s.pickup;
-    document.getElementById('f-price').value = s.price;
-    document.getElementById('f-status').value = s.status;
+    // 3. ISI SEMUA FIELD (Pastikan ID-nya benar)
+    document.getElementById('f-trip').value = s.trip || '';
+    document.getElementById('f-date').value = s.date || '';
+    document.getElementById('f-time').value = s.time || '00:00';
+    document.getElementById('f-bus').value = s.busId || '';
+    
+    // Data Pemesan (Ini yang tadi undefined)
+    document.getElementById('f-cust').value = s.cust || '';
+    document.getElementById('f-phone').value = s.phone || '';
+    document.getElementById('f-addr').value = s.addr || '';
+    document.getElementById('f-pickup').value = s.pickup || '';
+    
+    // Keuangan & Metode
+    document.getElementById('f-price').value = s.price || 0;
+    document.getElementById('f-status').value = s.status || 'Belum Bayar';
+    document.getElementById('f-payment-method').value = s.paymentMethod || 'Tunai';
     
     toggleDP(s.status); 
-    document.getElementById('f-dp').value = s.dp;
+    document.getElementById('f-dp').value = s.dp || 0;
 
-    // Isi tampilan nama bus di input pencarian
+    // Fitur Baru (Poin 4)
+    document.getElementById('f-seats').value = s.seats || '';
+    document.getElementById('f-extra-features').value = s.extraFeatures || '';
+
+    // Tampilkan Nama Bus di Input Pencarian
     const b = buses.find(x => x.id == s.busId);
     if(b) document.getElementById('f-bus-input').value = `${b.name} (${b.plate})`;
 }
@@ -1353,38 +1487,43 @@ document.getElementById('expense-form').onsubmit = (e) => {
         function renderFleetList() { document.getElementById('fleet-list').innerHTML = buses.map(b => `<div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;"><div><b>${b.name}</b> (${b.plate})</div><div><button class="btn-orange" onclick="editBus(${b.id})">✏️</button><button class="btn-red" onclick="deleteBus(${b.id})">🗑️</button></div></div>`).join(''); }
 
 
+
+function autoFillCategory(val) {
+    const words = val.trim().split(/\s+/); // Pakai regex biar lebih akurat kalau ada spasi dobel
+    if (words.length >= 2) {
+        document.getElementById('bus-category').value = words[0] + ' ' + words[1];
+    } else {
+        document.getElementById('bus-category').value = words[0];
+    }
+}
+
 document.getElementById('fleet-form').onsubmit = (e) => {
     e.preventDefault(); 
     const id = document.getElementById('bus-edit-id').value;
     
-    // Ambil data dari semua input
     const data = { 
         id: id ? parseInt(id) : Date.now(), 
         name: document.getElementById('bus-name').value, 
+        category: document.getElementById('bus-category').value, // Tambahan baru
         plate: document.getElementById('bus-plate').value, 
-        features: document.getElementById('bus-features').value, // <-- PASTIKAN INI ADA
+        features: document.getElementById('bus-features').value,
         stnk: document.getElementById('bus-stnk').value, 
-        kir: document.getElementById('bus-kir').value 
+        kir: document.getElementById('bus-kir').value,
+        kps: document.getElementById('bus-kps').value		
     };
     
-    // Update atau Tambah ke Array
     if(id) {
         buses = buses.map(b => b.id == id ? data : b);
     } else {
         buses.push(data);
     }
     
-    // SIMPAN KE LOCALSTORAGE & FIREBASE
     save(); 
-    
-    // Reset form dan refresh tampilan
     resetFleetForm(); 
     renderFleetList(); 
     renderAll();
-    
     alert("Data armada berhasil diperbarui!");
 };
-
 
 function editBus(id) {
     const b = buses.find(x => x.id == id); 
@@ -1392,13 +1531,12 @@ function editBus(id) {
 
     document.getElementById('bus-edit-id').value = b.id; 
     document.getElementById('bus-name').value = b.name; 
+    document.getElementById('bus-category').value = b.category || ''; // Tambahan baru
     document.getElementById('bus-plate').value = b.plate; 
-    
-    // Pastikan ID 'bus-features' sesuai dengan yang ada di HTML
     document.getElementById('bus-features').value = b.features || ''; 
-    
     document.getElementById('bus-stnk').value = b.stnk || ''; 
-    document.getElementById('bus-kir').value = b.kir || ''; 
+    document.getElementById('bus-kir').value = b.kir || '';
+    document.getElementById('bus-kps').value = b.kps || '';	
     
     document.getElementById('fleet-form-title').innerText = 'Edit Unit'; 
     document.getElementById('btn-save-bus').innerText = 'UPDATE UNIT'; 
@@ -1407,57 +1545,107 @@ function editBus(id) {
 
         function deleteBus(id) { if(confirm('Hapus unit ini?')) { buses = buses.filter(x => x.id !== id); save(); renderFleetList(); renderAll(); } }
         function resetFleetForm() { document.getElementById('fleet-form').reset(); document.getElementById('bus-edit-id').value = ''; document.getElementById('fleet-form-title').innerText = 'Tambah Unit Baru'; document.getElementById('btn-save-bus').innerText = 'TAMBAH UNIT'; document.getElementById('btn-cancel-bus').style.display = 'none'; }
-        function checkLegalAlerts() { const container = document.getElementById('legal-alerts'); container.innerHTML = ''; buses.forEach(b => { [{t:'STNK', d:new Date(b.stnk)}, {t:'KIR', d:new Date(b.kir)}].forEach(a => { if(!a.d || isNaN(a.d)) return; const diff = Math.ceil((a.d - new Date()) / (1000 * 60 * 60 * 24)); if(diff <= 30) { const col = diff <= 0 ? 'var(--danger)' : '#856404'; container.innerHTML += `<div style="padding:10px; background:white; border-left:5px solid ${col}; margin-bottom:10px; font-size:0.8rem;">⚠️ <b>${b.name}</b>: Pajak ${a.t} ${diff <= 0 ? 'Mati!' : 'sisa ' + diff + ' hr'}</div>`; } }); }); }
+        function checkLegalAlerts() {
+    const container = document.getElementById('legal-alerts');
+    if (!container) return;
+    container.innerHTML = '';
+    
+    buses.forEach(b => {
+        // Daftar surat yang mau dicek
+        const alerts = [
+            { label: 'STNK', date: b.stnk },
+            { label: 'KIR', date: b.kir },
+            { label: 'KPS', date: b.kps }
+        ];
+
+        alerts.forEach(a => {
+            if (!a.date) return;
+            
+            const expiryDate = new Date(a.date);
+            const today = new Date();
+            const diffTime = expiryDate - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            // Jika masa berlaku kurang dari 30 hari atau sudah lewat
+            if (diffDays <= 30) {
+                const isExpired = diffDays <= 0;
+                const bgColor = isExpired ? '#fff5f5' : '#fff9e6';
+                const borderColor = isExpired ? '#ff4d4d' : '#ffcc00';
+                const textColor = isExpired ? '#d32f2f' : '#856404';
+
+                container.innerHTML += `
+                    <div style="padding:10px 15px; background:${bgColor}; border-left:5px solid ${borderColor}; border-radius:6px; margin-bottom:10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="color:${textColor}; font-weight:bold; font-size:0.9rem;">
+                                ⚠️ ${b.name} (${b.plate || 'No Plate'})
+                            </span>
+                            <span style="font-size:0.7rem; background:${borderColor}; color:white; padding:2px 6px; border-radius:10px;">
+                                ${a.label}
+                            </span>
+                        </div>
+                        <p style="margin:5px 0 0 0; font-size:0.8rem; color:#555;">
+                            ${isExpired ? '<b>MASA BERLAKU HABIS!</b>' : 'Masa berlaku habis dalam <b>' + diffDays + ' hari</b> lagi.'}
+                            <br><small>Tgl Exp: ${a.date}</small>
+                        </p>
+                    </div>
+                `;
+            }
+        });
+    });
+}
 
 
 
 function sendWA(id) {
-            const s = schedules.find(x => x.id == id);
-            const b = buses.find(x => x.id == s.busId);
-            const sisa = (parseInt(s.price) || 0) - (parseInt(s.dp) || 0);
-            
-            // Logika Status Pembayaran untuk Pesan
-            let statusText = "";
-            if (s.status === 'Lunas') {
-                statusText = "LUNAS \u2705 (Terima Kasih!)";
-            } else if (s.status === 'DP') {
-                statusText = `Sisa Tagihan: *${formatRp(sisa)}* \u23F3`;
-            } else {
-                statusText = "Belum Ada Pembayaran \u26A0\uFE0F";
-            }
+    const s = schedules.find(x => x.id == id);
+    const b = buses.find(x => x.id == s.busId);
+    if (!s) return;
 
-            // Template Pesan Profesional
-            const rawMsg = `*KONFIRMASI RESERVASI BUS* \uD83D\uDE8C
+    // Filter Nama Armada: Hanya kategori (sama seperti invoice)
+    const armadaDisplay = b?.category || b?.name || '-';
+    const sisa = s.price - (s.dp || 0);
+
+    // Susun teks pesan
+    const pesan = `*KONFIRMASI RESERVASI BUS*
 --------------------------------------------
-Halo Kak *${s.cust}*, terimakasih telah mempercayakan perjalanan Anda kepada kami. Berikut adalah rincian reservasi Anda:
-
-\uD83D\uDCCD *Tujuan:* ${s.trip}
-\uD83D\uDCC5 *Tanggal:* ${new Date(s.date).toLocaleDateString('id-ID', {day:'2-digit', month:'long', year:'numeric'})}
-\uD83D\uDE8C *Armada:* ${b?.name || '-'} (${b?.plate || '-'})
-\uD83D\uDCCD *Titik Jemput:* ${s.pickup || '-'}
-\uD83C\uDFE0 *Alamat:* ${s.addr || '-'}
-
-*RINCIAN PEMBAYARAN:*
-\uD83D\uDCB0 Total Harga: ${formatRp(s.price)}
-\uD83D\uDCB3 DP/Masuk: ${formatRp(s.dp)}
-\uD83D\uDCDD *Status: ${statusText}*
+Halo Kak *${s.cust}*, terimakasih telah mempercayakan perjalanan Anda kepada *Tisal Trans Group*.
+Berikut adalah rincian reservasi Anda:
 --------------------------------------------
-
+📍 *Trip:* ${s.trip}
+📅 *Tanggal:* ${s.date}
+⏰ *Jam Standby:* ${s.time}
+🚌 *Armada:* ${armadaDisplay}
+🔢 *Kapasitas:* ${s.seats || '-'} Seat
+✨ *Fasilitas:* ${[b?.features, s.extraFeatures].filter(x => x).join(', ') || '-'}
+📍 *Titik Jemput:* ${s.pickup || '-'}
+--------------------------------------------
+*Rincian Pembayaran:*
+💰 *Total Harga:* Rp ${s.price.toLocaleString('id-ID')}
+✅ *DP/Masuk:* Rp ${(s.dp || 0).toLocaleString('id-ID')}
+🔴 *Sisa Tagihan:* Rp ${sisa.toLocaleString('id-ID')}
+📊 *Status:* ${s.status}
+--------------------------------------------
+*Pembayaran via transfer:*
+🏦 Bank BRI
+7477-01-022351-53-0
+an. Arif Wahyudi
+--------------------------------------------
 *Catatan:*
 - Mohon pastikan titik jemput sudah sesuai.
 - Harap standby 30 menit sebelum keberangkatan.
 
-Jika ada pertanyaan lebih lanjut, silakan hubungi kami kembali. Sampai jumpa di perjalanan! \uD83D\uDE4F`;
+Jika ada pertanyaan lebih lanjut, silakan hubungi kami kembali. Sampai jumpa di perjalanan! 🙏🏻`;
 
-            const encodedMsg = encodeURIComponent(rawMsg);
-            let phone = s.phone.replace(/\D/g, ''); 
-            
-            // Format nomor ke standar internasional (62)
-            if (phone.startsWith('0')) phone = '62' + phone.substring(1);
-            if (phone.startsWith('8')) phone = '62' + phone;
+    // BERSIHKAN NOMOR WA (Hapus spasi, strip, dll)
+    let phone = s.phone.replace(/\D/g, '');
+    if (phone.startsWith('0')) {
+        phone = '62' + phone.slice(1);
+    }
 
-            window.open(`https://wa.me/${phone}?text=${encodedMsg}`);
-        }
+    // KIRIM DENGAN FORMAT YANG LEBIH STABIL
+    const waUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(pesan)}`;
+    window.open(waUrl, '_blank');
+}
 
 
        function printInvoice(id) {
@@ -1524,9 +1712,9 @@ Jika ada pertanyaan lebih lanjut, silakan hubungi kami kembali. Sampai jumpa di 
             
             <div class="header">
                 <div class="brand">
-                    <h1>BUS MANAGER PRO</h1>
-                    <p>Jl. Raya Transportasi No. 123, Indonesia</p>
-                    <p>Telp: 0812-3456-7890 | Email: admin@buspro.com</p>
+                    <h1>PT. Tisal Trans Group</h1>
+                    <p>Jl. Raya Krajan - Semin (Tugu Pokah) Ngelo, Candi Rejo, Semin, Gunungkidul</p>
+                    <p>Admin1 : 0856-0194-7668 | Admin2 : 0852-8488-0002 | Office : 0896-2538-2277</p>
                 </div>
                 <div class="inv-title">
                     <h2>KWITANSI</h2>
@@ -1538,15 +1726,17 @@ Jika ada pertanyaan lebih lanjut, silakan hubungi kami kembali. Sampai jumpa di 
             <div class="info-grid">
                 <div class="info-box">
                     <h4>Informasi Penyewa</h4>
-                    <p><span>Nama</span>: <b>${s.cust}</b></p>
-                    <p><span>Telepon</span>: ${s.phone}</p>
-                    <p><span>Alamat</span>: ${s.addr || '-'}</p>
+                    <p><span>Nama</span>:&nbsp;<b>${s.cust}</b></p>
+                    <p><span>Telepon</span>:&nbsp;${s.phone}</p>
+                    <p><span>Alamat</span>:&nbsp;${s.addr || '-'}</p>
                 </div>
                 <div class="info-box">
                     <h4>Detail Perjalanan</h4>
-                    <p><span>Tujuan</span>: <b>${s.trip}</b></p>
-                    <p><span>Armada</span>: ${b?.name || '-'} (${b?.plate || '-'})</p>
-                    <p><span>Penjemputan</span>: ${s.pickup || '-'}</p>
+                    <p><span>Tujuan</span>:&nbsp;<b>${s.trip}</b></p>
+                    <p><span>Armada</span>:&nbsp;<b>${b?.category || b?.name || '-'}</b></p>
+                    <p><span>Kapasitas</span>:&nbsp;${s.seats ? s.seats + ' Seat' : '-'}</p>
+					<p><span>Fasilitas</span>:&nbsp;${[b?.features, s.extraFeatures].filter(x => x).join(', ') || '-'}</p>
+					<p><span>Penjemputan</span>:&nbsp;${s.pickup || '-'}</p>
                 </div>
             </div>
 
@@ -1572,12 +1762,23 @@ Jika ada pertanyaan lebih lanjut, silakan hubungi kami kembali. Sampai jumpa di 
                 <div class="terms">
                     <b>Syarat & Ketentuan:</b>
                     <ol style="padding-left:15px; margin:5px 0;">
-                        <li>Pembayaran DP minimal 30% dari total harga.</li>
-                        <li>Pelunasan maksimal H-3 sebelum keberangkatan.</li>
+                        <li>Pembayaran DP minimal 10% dari total harga.</li>
+                        <li>Pelunasan maksimal Hari H saat keberangkatan.</li>
                         <li>Pembatalan H-7 dikenakan denda 50% dari DP.</li>
                         <li>Kehilangan barang pribadi bukan tanggung jawab kami.</li>
                     </ol>
+					
+					<div style="margin-top: 15px; padding: 10px; border: 1px solid #005a9c; border-radius: 5px; background: #f0f7ff;">
+                        <p style="margin: 0; font-size: 11px; color: #005a9c;"><b>Informasi Pembayaran (Transfer):</b></p>
+                        <p style="margin: 5px 0 0 0; font-size: 11px;">
+                            🏦 <b>BANK BRI</b><br>
+                            No. Rek&nbsp;: <b>7477-01-022351-53-0</b><br>
+                            A.N&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <b>ARIF WAHYUDI</b>
+                        </p>
+                    </div>
                 </div>
+				
+                
                 <div class="totals">
                     <div class="total-row"><span>Total Biaya</span><span>${formatRp(s.price)}</span></div>
                     <div class="total-row" style="color:green"><span>Uang Masuk</span><span>${formatRp(s.dp)}</span></div>
@@ -1691,7 +1892,7 @@ function processExport() {
                         <th>DP / Masuk</th>
                         <th>Sisa</th>
                         <th>Status</th>
-						<th>Admin/Input Oleh</th>
+						<th>Metode</th> <th>Admin/Input Oleh</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -1710,7 +1911,7 @@ function processExport() {
                             <td class="text-right">${Number(s.dp) || 0}</td>
                             <td class="text-right ${sisa > 0 ? 'money-red' : ''}">${sisa}</td>
                             <td class="text-center ${stClass}">${s.status}</td>
-							<td class="text-center">${s.createdBy || '-'}</td>
+							<td class="text-center">${s.paymentMethod || 'Tunai'}</td> <td class="text-center">${s.createdBy || '-'}</td>
                         </tr>`;
                     }).join('')}
                 </tbody>
@@ -1744,7 +1945,7 @@ function processExport() {
                 </tbody>
             </table>
             <br>
-            <p style="font-size: 8pt; color: #999;">Dicetak otomatis oleh SMART BUS MANAGER v3.6 pada ${new Date().toLocaleString('id-ID')}</p>
+            <p style="font-size: 8pt; color: #999;">Dicetak otomatis oleh SMART BUS MANAGER v4.0 pada ${new Date().toLocaleString('id-ID')}</p>
         </body>
         </html>`;
 
@@ -1812,7 +2013,5 @@ function setQuickFilter(status) {
     </script>
 </body>
 </html>
-
-
 
 
