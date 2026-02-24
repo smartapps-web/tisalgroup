@@ -205,6 +205,10 @@
         <button class="btn-green" onclick="openExportModal()">📊 Export Data</button>
         <button class="btn-gray" onclick="exportBackup()">📥 Backup All</button>
         <button class="btn-gray" onclick="document.getElementById('importFile').click()">📤 Restore</button>
+		<div id="network-status" style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; border: 1px solid #ddd; background: #fff; vertical-align: middle;">
+        <span id="status-dot" style="height: 8px; width: 8px; border-radius: 50%; display: inline-block;"></span>
+        <span id="status-text">Mengecek...</span>
+    </div>
         <input type="file" id="importFile" style="display:none" onchange="importData(event)">
     </div>
 </header>
@@ -601,29 +605,42 @@ function saveSuratJalanData(isSilent = false) {
     const index = schedules.findIndex(x => x.id == id);
     
     if (index !== -1) {
-        schedules[index].fuel = parseInt(document.getElementById('sj-fuel').value) || 0;
-        schedules[index].toll = parseInt(document.getElementById('sj-toll').value) || 0;
-        schedules[index].tips = parseInt(document.getElementById('sj-tips').value) || 0;
-        schedules[index].sjNote = document.getElementById('sj-note').value;
+        // 1. Ambil data dari input modal
+        const fuel = parseInt(document.getElementById('sj-fuel').value) || 0;
+        const toll = parseInt(document.getElementById('sj-toll').value) || 0;
+        const tips = parseInt(document.getElementById('sj-tips').value) || 0;
+        const sjNote = document.getElementById('sj-note').value;
+
+        // 2. Update variabel lokal
+        schedules[index].fuel = fuel;
+        schedules[index].toll = toll;
+        schedules[index].tips = tips;
+        schedules[index].sjNote = sjNote;
         
-        save(); // Simpan ke Firebase
-        
-        // Hanya munculkan alert kalau TIDAK silent (saat klik tombol SIMPAN)
+        // 3. Langsung tembak ke Firebase agar permanen
+        // Gunakan fungsi save() bawaan aplikasi kamu atau panggil update khusus
+        if (typeof save === "function") {
+            save(); 
+        }
+
+        // 4. Kasih feedback kalau tidak silent
         if (!isSilent) {
-            alert("✅ Data Operasional Berhasil Disimpan!");
+            alert("✅ Data Operasional Terkunci Permanen!");
         }
     }
 }
 
 // 2. Pas cetak, panggil simpan versi SILENT
-function printSuratJalanProcess() {
+async function printSuratJalanProcess() {
     const id = document.getElementById('sj-id').value;
     
-    // Kita panggil simpan dengan parameter 'true' (Silent)
-    saveSuratJalanData(true); 
+    // Simpan dulu secara silent
+    saveSuratJalanData(true);
     
-    // Langsung buka halaman cetak tanpa interupsi alert
-    printSuratJalan(id); 
+    // Beri jeda 500ms agar database sempat memproses simpan sebelum buka window baru
+    setTimeout(() => {
+        printSuratJalan(id);
+    }, 500);
 }
 
 function printSuratJalan(id) {
@@ -1236,16 +1253,48 @@ const isSearchMatch = (s) => {
 }
 
 
+function updateNetworkStatus() {
+    const statusBox = document.getElementById('network-status');
+    const statusDot = document.getElementById('status-dot');
+    const statusText = document.getElementById('status-text');
+
+    if (!statusBox) return;
+
+    if (navigator.onLine) {
+        statusBox.style.background = "#eaffea";
+        statusBox.style.color = "#155724";
+        statusBox.style.borderColor = "#c3e6cb";
+        statusDot.style.background = "#28a745";
+        statusText.innerText = "ONLINE";
+    } else {
+        statusBox.style.background = "#f8d7da";
+        statusBox.style.color = "#721c24";
+        statusBox.style.borderColor = "#f5c6cb";
+        statusDot.style.background = "#dc3545";
+        statusText.innerText = "OFFLINE";
+    }
+}
+
+// Pantau perubahan koneksi
+window.addEventListener('online', updateNetworkStatus);
+window.addEventListener('offline', updateNetworkStatus);
+
+// Jalankan saat pertama kali load
+updateNetworkStatus();
 
 function createCardHtml(s, isUnpaidColumn) {
     const b = buses.find(x => x.id == s.busId); 
     const sisa = (parseInt(s.price)||0) - (parseInt(s.dp)||0);
     const badgeClass = s.status === 'Lunas' ? 'badge-lunas' : (s.status === 'DP' ? 'badge-dp' : 'badge-blm');
-  
+    
+    // --- LOGIKA SURAT JALAN ---
+    const totalSJ = (parseInt(s.fuel) || 0) + (parseInt(s.toll) || 0) + (parseInt(s.tips) || 0);
+    const sjStatus = totalSJ > 0 
+        ? `<small style="font-size: 0.65rem; font-weight: bold; color: #fff; background: #28a745; padding: 4px 6px; border-radius: 4px; white-space: nowrap;">✔️ SJ TERISI</small>` 
+        : `<small style="font-size: 0.65rem; font-weight: bold; color: #fff; background: #dc3545; padding: 4px 6px; border-radius: 4px; white-space: nowrap;">❌ SJ KOSONG</small>`;
 
-// --- SKRIP PEMBATASAN UNTUK AGUS ---
-    // Jika bukan Agus, tampilkan sisa tagihan. Jika Agus, kosongkan.  
-	let sisaHtml = "";
+    // --- SKRIP PEMBATASAN UNTUK AGUS ---
+    let sisaHtml = "";
     if (currentUser !== "Agus") {
         sisaHtml = `
         <div style="margin-top:10px; border-top:1px dashed #eee; padding-top:8px;">
@@ -1254,23 +1303,26 @@ function createCardHtml(s, isUnpaidColumn) {
             </div>
         </div>`;
     }
-	
-	
+    
     return `
 <div class="info-item" style="border-left-color: ${isUnpaidColumn ? 'var(--danger)' : 'var(--primary)'}">
     <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 10px;">
-    <strong style="font-size: 1.2rem; flex: 1; padding-right: 10px;">${s.trip}</strong> 
-    
-    <div style="display: flex; align-items: center; gap: 5px;">
-        <small style="font-size: 0.65rem; font-weight: bold; color: #555; background: #f0f0f0; padding: 4px 6px; border-radius: 4px; border: 1px solid #ddd; white-space: nowrap;">
-            ${s.paymentMethod === 'Transfer' ? '📱 TRANSFER' : '💵 TUNAI'}
-        </small>
-        <span class="badge ${badgeClass}" style="font-size: 0.75rem; white-space: nowrap; margin: 0;">
-            ${s.status}
-        </span>
-    </div>
+        <strong style="font-size: 1.2rem; flex: 1; padding-right: 10px;">${s.trip}</strong> 
+        
+        <div style="display: flex; align-items: center; gap: 5px; flex-wrap: wrap; justify-content: flex-end;">
+            ${sjStatus}
+            
+            <small style="font-size: 0.65rem; font-weight: bold; color: #555; background: #f0f0f0; padding: 4px 6px; border-radius: 4px; border: 1px solid #ddd; white-space: nowrap;">
+                ${s.paymentMethod === 'Transfer' ? '📱 TRANSFER' : '💵 TUNAI'}
+            </small>
+            <span class="badge ${badgeClass}" style="font-size: 0.75rem; white-space: nowrap; margin: 0;">
+                ${s.status}
+            </span>
+        </div>
 
-    </div> <div class="detail-row" style="font-size: 0.9rem;"> 
+    </div> 
+    
+    <div class="detail-row" style="font-size: 0.9rem;"> 
         <span>📅 <b>Tgl:</b> ${s.date} <b style="color:var(--primary)">(${s.time})</b></span>
         <span>🚌 <b>Bus:</b> ${b?.name || '-'}</span>
         <span style="display: flex; justify-content: space-between; width: 100%;">
@@ -1279,23 +1331,20 @@ function createCardHtml(s, isUnpaidColumn) {
         </span>
     </div>
 
-        <div class="pickup-box" style="font-size: 0.8rem;">📍 <b>Jemput:</b> ${s.pickup || '-'}</div>
-        
-        <span class="badge badge-user" style="font-size: 0.8rem;">✍️ Oleh: ${s.createdBy || 'System'}</span>
-        
-        <div style="margin-top:10px; border-top:1px dashed #eee; padding-top:8px;">
-            <div style="font-weight:bold; font-size: 0.8rem; color:${sisa > 0 ? 'var(--danger)' : 'var(--success)'}">
-                ${sisa > 0 ? 'Sisa Tagihan: ' + formatRp(sisa) : 'SUDAH LUNAS'}
-            </div>
-        </div>
-        
-        <div style="display:flex; gap:5px; margin-top:10px; flex-wrap:wrap; font-size: 0.85rem;">
-            <button class="btn-orange" onclick="editSched(${s.id})">✏️ Edit</button>
-            <button class="btn-gray" onclick="printInvoice(${s.id})">📄 Kwitansi</button><button class="btn-blue" onclick="openSuratJalanModal(${s.id})">🚚 Surat Jalan</button>
-            <button class="btn-green" onclick="sendWA(${s.id})">📱 WA</button>
-            <button class="btn-red" onclick="delSched(${s.id})">🗑️ Hapus</button>
-        </div>
-    </div>`;
+    <div class="pickup-box" style="font-size: 0.8rem;">📍 <b>Jemput:</b> ${s.pickup || '-'}</div>
+    
+    <span class="badge badge-user" style="font-size: 0.8rem;">✍️ Oleh: ${s.createdBy || 'System'}</span>
+    
+    ${sisaHtml}
+    
+    <div style="display:flex; gap:5px; margin-top:10px; flex-wrap:wrap; font-size: 0.85rem;">
+        <button class="btn-orange" onclick="editSched(${s.id})">✏️ Edit</button>
+        <button class="btn-gray" onclick="printInvoice(${s.id})">📄 Kwitansi</button>
+        <button class="btn-blue" onclick="openSuratJalanModal(${s.id})">🚚 Surat Jalan</button>
+        <button class="btn-green" onclick="sendWA(${s.id})">📱 WA</button>
+        <button class="btn-red" onclick="delSched(${s.id})">🗑️ Hapus</button>
+    </div>
+</div>`;
 }
 
 
