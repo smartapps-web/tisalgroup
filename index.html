@@ -1315,19 +1315,24 @@ function exportBusStatsToExcel() {
 				
 // Filter bus yang sedang jalan di tanggal dStr (Cek rentang tanggal)
 schedules.filter(s => dStr >= s.date && dStr <= (s.dateEnd || s.date)).forEach(s => {
-    const busData = buses.find(b => b.id == s.busId);
-    const busName = busData ? busData.name : 'No Bus';
-    const color = s.status === 'Lunas' ? 'var(--success)' : (s.status === 'DP' ? 'var(--warning)' : 'var(--danger)');
-    
-    dayEl.innerHTML += `
-        <div class="event" style="background:${color}; text-align:left; font-size:0.75rem; padding:4px; line-height:1.2; margin-top:3px; border-radius:4px;">
-            <div style="font-weight:bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                ${s.trip}
-            </div>
-            <div style="font-size:0.6rem; opacity:0.9;">
-                ${s.time}-${s.timeEnd} | ${busName}
-            </div>
-        </div>`;
+// Ambil semua nama bus yang ada di jadwal ini
+const selectedBusIds = s.busIds || [s.busId];
+const allBusNames = selectedBusIds.map(bId => {
+    const bData = buses.find(x => x.id == bId);
+    return bData ? bData.name : '-';
+}).join(' + '); // Gabungkan pakai tanda + agar hemat tempat
+
+const color = s.status === 'Lunas' ? 'var(--success)' : (s.status === 'DP' ? 'var(--warning)' : 'var(--danger)');
+
+dayEl.innerHTML += `
+    <div class="event" style="background:${color}; text-align:left; font-size:0.75rem; padding:4px; line-height:1.2; margin-top:3px; border-radius:4px; cursor:pointer;" onclick="event.stopPropagation(); editSched(${s.id})">
+        <div style="font-weight:bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+            ${s.trip}
+        </div>
+        <div style="font-size:0.6rem; opacity:0.9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+            ${s.time} | ${allBusNames}
+        </div>
+    </div>`;
 });
 
                 dayEl.onclick = () => openScheduleModal(dStr); grid.appendChild(dayEl);
