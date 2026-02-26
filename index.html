@@ -990,8 +990,10 @@ function closeModal() {
         m.style.display = 'none';
     });
     // Reset data sementara agar tidak nyangkut ke modal berikutnya
-    tempSelectedBuses = []; 
-    currentEditExpenseId = null;
+tempSelectedBuses = []; 
+    if(document.getElementById('selected-bus-list')) {
+        renderSelectedBuses();
+    }
 }
         function changeMonth(dir) { currDate.setMonth(currDate.getMonth() + dir); renderAll(); }
         function toggleDP(val) { document.getElementById('dp-group').style.display = (val === 'DP') ? 'block' : 'none'; }
