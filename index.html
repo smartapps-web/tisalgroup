@@ -142,7 +142,42 @@
         .badge-lunas { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .badge-dp { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
         .badge-blm { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .pickup-box { background: #fff8e1; padding: 8px; border-radius: 6px; border-left: 3px solid #ffc107; margin-top: 5px; font-size: 0.8rem; }
+/* Kotak Biru Pilihan Bus - Versi Minimalis */
+.bus-tag {
+    background: var(--primary);
+    color: white;
+    padding: 2px 8px; /* Diperkecil dari sebelumnya */
+    border-radius: 4px; /* Kotak sedikit membulat lebih hemat tempat dibanding oval */
+    font-size: 0.7rem; /* Ukuran tulisan diperkecil */
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin: 2px; /* Jarak antar kotak */
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+.bus-tag b {
+    cursor: pointer;
+    color: #ffc107;
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.bus-tag b:hover {
+    color: #ff4d4d; /* Berubah merah saat mau dihapus */
+}
+
+/* Tambahan: Supaya kontainer pembungkusnya tidak kaku */
+#selected-bus-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-content: flex-start;
+    padding: 5px !important;
+}
+		.bus-tag b { cursor: pointer; color: #ffc107;  font-size: 1.1rem; }
+		.bus-tag b:hover { color: white; } .pickup-box { background: #fff8e1; padding: 8px; border-radius: 6px; border-left: 3px solid #ffc107; margin-top: 5px; font-size: 0.8rem; }
 		
 
 		
@@ -182,7 +217,7 @@
         
         <div style="text-align: left; margin-bottom: -10px;"><label style="font-size: 0.8rem; font-weight: bold; color: #555;">Pilih Pengguna:</label></div>
 <select id="user-select">
-    <option value="Dani">Dani (Admin 1)</option>
+    <option value="Dany">Dany (Admin 1)</option>
     <option value="Pepik">Pepik (Admin 2)</option>
     <option value="Owner">Owner (Pemilik)</option>
 	<option value="Admin">Admin Utama</option>
@@ -392,7 +427,7 @@
         </div>
 
         <div class="form-group">
-            <label>Password Dani (Admin 1)</label>
+            <label>Password Dany (Admin 1)</label>
             <input type="text" id="set-pass-dani">
         </div>
         <div class="form-group" style="margin-top: 10px;">
@@ -611,7 +646,7 @@ const KEYS = {
 };
         let buses = [], schedules = [], expenses = [], currDate = new Date();
         let currentUser = null;
-        let passwords = { "Dani": "123", "Pepik": "123", "Admin": "madhacker", "Owner": "tisal2026" };
+        let passwords = { "Dany": "123", "Pepik": "123", "Admin": "madhacker", "Owner": "tisal2026" };
         let myChart = null;
         let currentEditExpenseId = null;
 
@@ -864,7 +899,7 @@ function openAccountSettings() {
 function saveAccountSettings() {
     try {
         // Ambil data dari input modal
-        const pDani = document.getElementById('set-pass-dani').value;
+        const pDany = document.getElementById('set-pass-dani').value;
         const pPepik = document.getElementById('set-pass-pepik').value;
         const pAdmin = document.getElementById('set-pass-admin').value;
         const pOwner = document.getElementById('set-pass-owner').value;
