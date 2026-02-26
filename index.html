@@ -559,7 +559,7 @@
     <input type="hidden" id="bus-edit-id">
     <div class="form-group">
         <label id="fleet-form-title">Tambah Unit Baru</label>
-        <input type="text" id="bus-name" required placeholder="Nama Unit (Contoh: Jetbus 5, JB5-Tsubasa, JB5-Kuning)" onkeyup="autoFillCategory(this.value)">
+        <input type="text" id="bus-name" required placeholder="Nama Unit (Contoh: Jetbus 5, JB5 Tsubasa)" onkeyup="autoFillCategory(this.value)">
     </div>
     
     <div class="form-group">
@@ -1914,15 +1914,25 @@ function sendWA(id) {
         return bData ? (bData.category || bData.name) : '-';
     }).join(' + ');
 
-    // --- 2. LOGIKA GABUNG FASILITAS (UTAMA + TAMBAHAN) ---
-    // Kita ambil semua fasilitas dari tiap bus yang dipilih
-    let fasilitasUtama = busIds.map(bId => {
+// --- GABUNG & HAPUS DUPLIKAT FASILITAS ---
+    let daftarFasilitas = [];
+    
+    // Ambil fasilitas dari semua bus
+    busIds.forEach(bId => {
         const bData = buses.find(x => x.id == bId);
-        return bData ? bData.features : '';
-    }).filter(f => f !== '').join(', '); // Gabungkan fasilitas antar bus jika berbeda
+        if (bData && bData.features) {
+            // Pecah berdasarkan koma, bersihkan spasi, masukkan ke array
+            bData.features.split(',').forEach(f => daftarFasilitas.push(f.trim()));
+        }
+    });
 
-    // Gabungkan dengan fasilitas tambahan dari form jadwal
-    const semuaFasilitas = [fasilitasUtama, s.extraFeatures].filter(x => x && x.trim() !== '').join(', ');
+    // Tambahkan fasilitas tambahan dari jadwal
+    if (s.extraFeatures) {
+        s.extraFeatures.split(',').forEach(f => daftarFasilitas.push(f.trim()));
+    }
+
+    // PROSES SAKTI: Hapus duplikat (Set) dan gabung kembali jadi satu kalimat
+    const semuaFasilitas = [...new Set(daftarFasilitas)].filter(x => x).join(', ');
 
     const sisa = s.price - (s.dp || 0);
 
@@ -2060,16 +2070,25 @@ Jika ada pertanyaan lebih lanjut, silakan hubungi kami kembali. Sampai jumpa di 
     }).join(' + ')}
 </b></p>
                     <p><span>Kapasitas</span>:&nbsp;${s.seats ? s.seats + ' Seat' : '-'}</p>
-					<p><span>Fasilitas</span>:&nbsp;${(() => {
-        // Ambil fasilitas utama dari semua bus yang dipilih
+<p><span>Fasilitas</span>:&nbsp;${(() => {
+        let listFas = [];
         const busIds = s.busIds || [s.busId];
-        const fUtama = busIds.map(bId => {
+        
+        // Ambil fasilitas utama
+        busIds.forEach(bId => {
             const bData = buses.find(x => x.id == bId);
-            return bData ? bData.features : '';
-        }).filter(f => f !== '').join(', ');
+            if (bData && bData.features) {
+                bData.features.split(',').forEach(f => listFas.push(f.trim()));
+            }
+        });
 
-        // Gabungkan dengan fasilitas tambahan di jadwal
-        return [fUtama, s.extraFeatures].filter(x => x && x.trim() !== '').join(', ') || '-';
+        // Ambil fasilitas tambahan
+        if (s.extraFeatures) {
+            s.extraFeatures.split(',').forEach(f => listFas.push(f.trim()));
+        }
+
+        // Hapus kata yang sama, gabung lagi pakai koma
+        return [...new Set(listFas)].filter(x => x).join(', ') || '-';
     })()}</p>
 					<p><span>Penjemputan</span>:&nbsp;${s.pickup || '-'}</p>
                 </div>
@@ -2340,7 +2359,5 @@ function setQuickFilter(status) {
     </script>
 </body>
 </html>
-
-
 
 
