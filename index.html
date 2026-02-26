@@ -143,7 +143,20 @@
         .badge-dp { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
         .badge-blm { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
         .pickup-box { background: #fff8e1; padding: 8px; border-radius: 6px; border-left: 3px solid #ffc107; margin-top: 5px; font-size: 0.8rem; }
-        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); }
+		
+
+		
+		
+        .modal { 
+    display: none; 
+    position: fixed; 
+    z-index: 3000 !important; /* Naikkkan ke 3000 agar di atas segalanya */
+    left: 0; 
+    top: 0; 
+    width: 100%; 
+    height: 100%; 
+    background: rgba(0,0,0,0.6); 
+}
         .modal-content { background: white; margin: 5vh auto; padding: 25px; width: 90%; max-width: 550px; border-radius: 15px; max-height: 85vh; overflow-y: auto; }
         .form-group { margin-bottom: 12px; }
         .form-group label { display: block; font-weight: 600; margin-bottom: 4px; font-size: 0.8rem; }
@@ -169,7 +182,7 @@
         
         <div style="text-align: left; margin-bottom: -10px;"><label style="font-size: 0.8rem; font-weight: bold; color: #555;">Pilih Pengguna:</label></div>
 <select id="user-select">
-    <option value="Dany">Dany (Admin 1)</option>
+    <option value="Dani">Dani (Admin 1)</option>
     <option value="Pepik">Pepik (Admin 2)</option>
     <option value="Owner">Owner (Pemilik)</option>
 	<option value="Admin">Admin Utama</option>
@@ -379,8 +392,8 @@
         </div>
 
         <div class="form-group">
-            <label>Password Dany (Admin 1)</label>
-            <input type="text" id="set-pass-Dany">
+            <label>Password Dani (Admin 1)</label>
+            <input type="text" id="set-pass-dani">
         </div>
         <div class="form-group" style="margin-top: 10px;">
             <label>Password Pepik (Admin 2)</label>
@@ -415,60 +428,94 @@
         </form>
     </div></div>
 
-    <div id="modal-form" class="modal"><div class="modal-content">
+<div id="modal-form" class="modal">
+    <div class="modal-content">
         <h2 id="sched-modal-title">Input Jadwal Sewa</h2>
         <form id="schedule-form">
             <input type="hidden" id="edit-id">
-            <div class="form-group"><label>Nama Trip / Tujuan</label><input type="text" id="f-trip" required></div>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-
-
-
-
-<div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; background: #f0f7ff; padding: 10px; border-radius: 8px; border: 1px solid #cce5ff;">
-    <div class="form-group">
-        <label>📅 Berangkat</label>
-        <input type="date" id="f-date" required onchange="calculateDuration()">
-        <input type="time" id="f-time" required style="margin-top:5px;">
-    </div>
-    <div class="form-group">
-        <label>🏁 Estimasi Pulang</label>
-        <input type="date" id="f-date-end" required onchange="calculateDuration()">
-        <input type="time" id="f-time-end" required style="margin-top:5px;">
-    </div>
-</div>
-<div style="margin-bottom: 15px; font-size: 0.8rem; color: var(--primary); font-weight: bold;">
-    ⏱️ Durasi Sewa: <span id="f-duration">1</span> Hari
-</div>
-
-
-
-
-                <div class="form-group"><label>Unit Bus</label><input list="bus-options" id="f-bus-input" placeholder="Cari..." required onchange="syncBusId(this.value)"><datalist id="bus-options"></datalist><input type="hidden" id="f-bus"></div>
+            
+            <div class="form-group">
+                <label>Nama Trip / Tujuan</label>
+                <input type="text" id="f-trip" required>
             </div>
-			<div style="display:grid; grid-template-columns: 1fr 2fr; gap:10px; margin-top: 10px;">
-    <div class="form-group">
-        <label>🔢 Jumlah Seat (Kursi)</label>
-        <input type="text" id="f-seats" placeholder="Misal: 50">
-    </div>
-    <div class="form-group">
-        <label>✨ Fasilitas Tambahan (Custom)</label>
-        <input type="text" id="f-extra-features" placeholder="Misal: Selimut, Bantal, Snack">
-    </div>
-</div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; background: #f0f7ff; padding: 10px; border-radius: 8px; border: 1px solid #cce5ff; margin-bottom: 10px;">
+                <div class="form-group">
+                    <label>📅 Berangkat</label>
+                    <input type="date" id="f-date" required onchange="calculateDuration()">
+                    <input type="time" id="f-time" required style="margin-top:5px;">
+                </div>
+                <div class="form-group">
+                    <label>🏁 Estimasi Pulang</label>
+                    <input type="date" id="f-date-end" required onchange="calculateDuration()">
+                    <input type="time" id="f-time-end" required style="margin-top:5px;">
+                </div>
+            </div>
+
+            <div style="margin-bottom: 15px; font-size: 0.8rem; color: var(--primary); font-weight: bold;">
+                ⏱️ Durasi Sewa: <span id="f-duration">1</span> Hari
+            </div>
+
+            <div class="form-group">
+                <label>🚌 Unit Armada (Bisa pilih lebih dari satu)</label>
+                <div style="display: flex; gap: 5px; margin-bottom: 5px;">
+                    <input list="bus-options" id="f-bus-input" placeholder="Cari bus..." style="flex: 1;" onchange="addBusToList(this.value)">
+                    <datalist id="bus-options"></datalist>
+                </div>
+                <div id="selected-bus-list" style="display: flex; flex-wrap: wrap; gap: 5px; padding: 8px; border: 1px solid #ddd; border-radius: 8px; min-height: 40px; background: #fff;"></div>
+                <input type="hidden" id="f-bus-ids">
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top: 10px;">
+                <div class="form-group">
+                    <label>🔢 Jumlah Seat (Kursi)</label>
+                    <input type="text" id="f-seats" placeholder="Misal: 50">
+                </div>
+                <div class="form-group">
+                    <label>✨ Fasilitas Tambahan</label>
+                    <input type="text" id="f-extra-features" placeholder="Misal: Selimut, Snack">
+                </div>
+            </div>
+
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                 <div class="form-group"><label>Nama Pemesan</label><input type="text" id="f-cust" required></div>
                 <div class="form-group"><label>Nomor WA</label><input type="text" id="f-phone" required></div>
             </div>
-            <div class="form-group"><label>🏠 Alamat Lengkap Pemesan</label><textarea id="f-addr" rows="2"></textarea></div>
+            
+            <div class="form-group"><label>🏠 Alamat Lengkap</label><textarea id="f-addr" rows="2"></textarea></div>
             <div class="form-group"><label>📍 Titik Jemput</label><textarea id="f-pickup" rows="2"></textarea></div>
+            
             <div class="form-group"><label>Harga Sewa (Rp)</label><input type="number" id="f-price" required></div>
-            <div class="form-group"><label>Status Pembayaran</label><select id="f-status" onchange="toggleDP(this.value)"><option value="Belum Bayar">Belum Bayar</option><option value="DP">DP (Uang Muka)</option><option value="Lunas">Lunas</option></select></div>
-			<div class="form-group"><label>Metode Pembayaran</label><select id="f-payment-method"><option value="Tunai">💵 Tunai (Cash)</option><option value="Transfer">📱 Transfer Bank</option></select></div>			
-            <div id="dp-group" class="form-group" style="display:none; background:#f0fff4; padding:10px; border-radius:8px;"><label>Jumlah DP (Rp)</label><input type="number" id="f-dp"></div>
-            <div style="display:flex; gap:10px; margin-top:20px;"><button type="submit" class="btn-blue" style="flex:2; justify-content:center">SIMPAN JADWAL</button><button type="button" class="btn-gray" style="flex:1" onclick="closeModal()">BATAL</button></div>
+            
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <div class="form-group">
+                    <label>Status Pembayaran</label>
+                    <select id="f-status" onchange="toggleDP(this.value)">
+                        <option value="Belum Bayar">Belum Bayar</option>
+                        <option value="DP">DP (Uang Muka)</option>
+                        <option value="Lunas">Lunas</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Metode</label>
+                    <select id="f-payment-method">
+                        <option value="Tunai">💵 Tunai</option>
+                        <option value="Transfer">📱 Transfer</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="dp-group" class="form-group" style="display:none; background:#f0fff4; padding:10px; border-radius:8px;">
+                <label>Jumlah DP (Rp)</label><input type="number" id="f-dp">
+            </div>
+
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button type="submit" class="btn-blue" style="flex:2; justify-content:center">SIMPAN JADWAL</button>
+                <button type="button" class="btn-gray" style="flex:1" onclick="closeModal()">BATAL</button>
+            </div>
         </form>
-    </div></div>
+    </div>
+</div>
 
     <div id="modal-fleet" class="modal"><div class="modal-content">
         <h3>Kelola Armada</h3>
@@ -564,7 +611,7 @@ const KEYS = {
 };
         let buses = [], schedules = [], expenses = [], currDate = new Date();
         let currentUser = null;
-        let passwords = { "Dany": "123", "Pepik": "123", "Admin": "madhacker", "Owner": "tisal2026" };
+        let passwords = { "Dani": "123", "Pepik": "123", "Admin": "madhacker", "Owner": "tisal2026" };
         let myChart = null;
         let currentEditExpenseId = null;
 
@@ -591,24 +638,55 @@ const FIREBASE_URL = "https://bus-managemen-5fca8-default-rtdb.asia-southeast1.f
 
         function handleLogout() { sessionStorage.removeItem(KEYS.USER); location.reload(); }
 
+
+
+
+let tempSelectedBuses = [];
+
+function addBusToList(val) {
+    const options = document.querySelectorAll('#bus-options option');
+    let busFound = null;
+    
+    options.forEach(opt => {
+        if(opt.value === val) {
+            // Kita ambil ID dan Nama Bus-nya
+            busFound = { id: opt.getAttribute('data-id'), name: val };
+        }
+    });
+
+    if (busFound && !tempSelectedBuses.some(b => b.id == busFound.id)) {
+        tempSelectedBuses.push(busFound);
+        renderSelectedBuses(); // Fungsi untuk memunculkan tag biru
+        document.getElementById('f-bus-input').value = ''; // Kosongkan lagi inputnya
+    }
+}
+
+function removeBusFromList(id) {
+    tempSelectedBuses = tempSelectedBuses.filter(b => b.id != id);
+    renderSelectedBuses();
+}
+
+function renderSelectedBuses() {
+    const container = document.getElementById('selected-bus-list');
+    const hiddenInput = document.getElementById('f-bus-ids');
+    
+    container.innerHTML = tempSelectedBuses.map(b => `
+        <div class="bus-tag">
+            ${b.name} <b onclick="removeBusFromList('${b.id}')">×</b>
+        </div>
+    `).join('');
+    
+    hiddenInput.value = tempSelectedBuses.map(b => b.id).join(',');
+}
+
+
+
+
+
+
 // --- FUNGSI MODAL SURAT JALAN ---
 
-function openSuratJalanModal(id) {
-    const s = schedules.find(x => x.id == id);
-    if (!s) return;
 
-    // Masukkan ID ke hidden input agar sistem tahu jadwal mana yang sedang diproses
-    document.getElementById('sj-id').value = s.id;
-    
-    // Isi kolom dengan data lama (kalau sudah pernah diisi sebelumnya)
-    document.getElementById('sj-fuel').value = s.fuel || 0;
-    document.getElementById('sj-toll').value = s.toll || 0;
-    document.getElementById('sj-tips').value = s.tips || 0;
-    document.getElementById('sj-note').value = s.sjNote || '';
-
-    // Tampilkan popup
-    document.getElementById('modal-surat-jalan').style.display = 'block';
-}
 
 // 1. Kita buat fungsi simpan jadi "Silent" (tanpa alert)
 function saveSuratJalanData(isSilent = false) {
@@ -729,7 +807,7 @@ function printSuratJalan(id) {
         </div>
 
         <div class="signature">
-            <div><p>Admin Operasional,</p><br><br><p><b>( Dany / Pepik )</b></p></div>
+            <div><p>Admin Operasional,</p><br><br><p><b>( Dani / Pepik )</b></p></div>
             <div><p>Driver Penerima,</p><br><br><p><b>( ________________ )</b></p></div>
         </div>
 
@@ -774,7 +852,7 @@ function openAccountSettings() {
     }
     
     // Isi data password ke input
-    document.getElementById('set-pass-Dany').value = passwords["Dany"] || "123";
+    document.getElementById('set-pass-dani').value = passwords["Dani"] || "123";
     document.getElementById('set-pass-pepik').value = passwords["Pepik"] || "123";
     document.getElementById('set-pass-admin').value = passwords["Admin"] || "madhacker";
     document.getElementById('set-pass-owner').value = passwords["Owner"] || "tisal2026";
@@ -786,13 +864,13 @@ function openAccountSettings() {
 function saveAccountSettings() {
     try {
         // Ambil data dari input modal
-        const pDany = document.getElementById('set-pass-Dany').value;
+        const pDani = document.getElementById('set-pass-dani').value;
         const pPepik = document.getElementById('set-pass-pepik').value;
         const pAdmin = document.getElementById('set-pass-admin').value;
         const pOwner = document.getElementById('set-pass-owner').value;
 
         // Update variabel pusat
-        passwords["Dany"] = pDany;
+        passwords["Dani"] = pDani;
         passwords["Pepik"] = pPepik;
         passwords["Admin"] = pAdmin;
         passwords["Owner"] = pOwner;
@@ -870,7 +948,16 @@ function loadData() {
         // --- CORE UI LOGIC (Index1) ---
         function formatRp(n) { return "Rp " + (parseInt(n)||0).toLocaleString('id-ID'); }
         function renderAll() { renderCalendar(); renderStats(); renderSidebar(); checkLegalAlerts(); }
-        function closeModal() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
+function closeModal() {
+    // Tutup semua elemen dengan class 'modal'
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(m => {
+        m.style.display = 'none';
+    });
+    // Reset data sementara agar tidak nyangkut ke modal berikutnya
+    tempSelectedBuses = []; 
+    currentEditExpenseId = null;
+}
         function changeMonth(dir) { currDate.setMonth(currDate.getMonth() + dir); renderAll(); }
         function toggleDP(val) { document.getElementById('dp-group').style.display = (val === 'DP') ? 'block' : 'none'; }
 
@@ -890,7 +977,7 @@ function loadData() {
             const tbody = document.getElementById('list-expenses-body'); tbody.innerHTML = '';
             fE.sort((a,b)=>b.date.localeCompare(a.date)).forEach(e => {
                 const b = buses.find(x => x.id == e.busId);
-                tbody.innerHTML += `<tr><td style="padding:10px">${e.date}</td><td>${b?.name||'Kantor'}</td><td>${e.cat}</td><td>${e.desc||'-'}</td><td align="right">${formatRp(e.amount)}</td><td align="center"><button class="btn-red" style="padding:4px" onclick="delExp(${e.id})">🗑️</button></td></tr>`;
+                tbody.innerHTML += `<tr><td style="padding:10px">${e.date}</td><td>${b?.name||'Kantor'}</td><td>${e.cat}</td><td>${e.desc||'-'}</td><td align="right">${formatRp(e.amount)}</td><td align="center"><button class="btn-red" style="padding:4px" onclick="deleteExpense(${e.id})">🗑️</button></td></tr>`;
             });
             updateFinanceChart(omzet, masuk, keluar, masuk-keluar);
         }
@@ -1423,79 +1510,65 @@ function calculateDuration() {
     const start = document.getElementById('f-date').value;
     const end = document.getElementById('f-date-end').value;
     const info = document.getElementById('f-duration');
-
     if (start && end) {
         const d1 = new Date(start);
         const d2 = new Date(end);
         const diffTime = d2 - d1;
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-        
         if (d2 < d1) {
             alert("Tanggal pulang tidak boleh sebelum tanggal berangkat!");
             document.getElementById('f-date-end').value = start;
             info.innerText = "1";
-        } else {
-            info.innerText = diffDays;
-        }
+        } else { info.innerText = diffDays; }
     }
 }
-
-
-        function syncBusId(val) {
-            const options = document.querySelectorAll('#bus-options option');
-            let foundId = "";
-            options.forEach(opt => {
-                if(opt.value === val) foundId = opt.getAttribute('data-id');
-            });
-            document.getElementById('f-bus').value = foundId;
-        }
-
-
 
 document.getElementById('schedule-form').onsubmit = (e) => {
     e.preventDefault();
     const id = document.getElementById('edit-id').value;
-    const busId = document.getElementById('f-bus').value;
+    const busIds = document.getElementById('f-bus-ids').value.split(',').filter(x => x);
+    
+    if (busIds.length === 0) { alert("Pilih minimal satu bus!"); return; }
+
     const fDate = document.getElementById('f-date').value;
     const fDateEnd = document.getElementById('f-date-end').value;
     const fTime = document.getElementById('f-time').value;
     const fTimeEnd = document.getElementById('f-time-end').value;
 
-    // --- LOGIKA PENOLAKAN (OVERLAP CHECK) ---
     const tStartNew = new Date(`${fDate}T${fTime}`);
     const tEndNew = new Date(`${fDateEnd}T${fTimeEnd}`);
 
-    const isBentrok = schedules.some(s => {
-        // 1. Abaikan jika itu jadwal yang sedang kita edit sendiri
-        if (s.id == id) return false;
-        // 2. Hanya cek jika Bus yang dipilih sama
-        if (String(s.busId) !== String(busId)) return false;
+    let adaYangBentrok = false;
+    let namaBusBentrok = "";
 
-        // 3. Ambil rentang waktu jadwal yang sudah ada di database
-        const tStartExisting = new Date(`${s.date}T${s.time}`);
-        const tEndExisting = new Date(`${s.dateEnd || s.date}T${s.timeEnd || '23:59'}`);
-
-        // 4. Rumus Overlap: (Mulai_Baru < Selesai_Lama) DAN (Selesai_Baru > Mulai_Lama)
-        return (tStartNew < tEndExisting && tEndNew > tStartExisting);
+    busIds.forEach(bId => {
+        const bentrok = schedules.some(s => {
+            if (s.id == id) return false;
+            const sBusIds = s.busIds || [s.busId]; 
+            if (!sBusIds.includes(bId)) return false;
+            const tStartExisting = new Date(`${s.date}T${s.time}`);
+            const tEndExisting = new Date(`${s.dateEnd || s.date}T${s.timeEnd || '23:59'}`);
+            return (tStartNew < tEndExisting && tEndNew > tStartExisting);
+        });
+        if (bentrok) {
+            adaYangBentrok = true;
+            const b = buses.find(x => x.id == bId);
+            namaBusBentrok = b ? b.name : bId;
+        }
     });
 
-    if (isBentrok) {
-        // Cari nama bus buat pesan error yang lebih jelas
-        const b = buses.find(x => x.id == busId);
-        alert(`❌ GAGAL SIMPAN!\nArmada ${b ? b.name : ''} masih dalam masa sewa di jam tersebut.\nSilakan pilih armada lain atau sesuaikan jam berangkat/pulang.`);
-        return; // Berhenti di sini, data tidak akan masuk ke Firebase
+    if (adaYangBentrok) {
+        alert(`❌ GAGAL SIMPAN!\nBus ${namaBusBentrok} sudah ada jadwal di jam tersebut.`);
+        return;
     }
 
-    // --- JIKA TIDAK BENTROK, LANJUT SIMPAN ---
     const data = { 
         id: id ? parseInt(id) : Date.now(), 
         trip: document.getElementById('f-trip').value, 
-        date: fDate, 
-        dateEnd: fDateEnd,
-        time: fTime, 
-        timeEnd: fTimeEnd,
+        date: fDate, dateEnd: fDateEnd,
+        time: fTime, timeEnd: fTimeEnd,
         duration: document.getElementById('f-duration').innerText,
-        busId: busId, 
+        busIds: busIds, busId: busIds[0],
         cust: document.getElementById('f-cust').value,
         phone: document.getElementById('f-phone').value, 
         addr: document.getElementById('f-addr').value, 
@@ -1510,59 +1583,87 @@ document.getElementById('schedule-form').onsubmit = (e) => {
     };
     
     if(data.status === 'Lunas') data.dp = data.price;
-    if(id) schedules = schedules.map(s => s.id == id ? data : s); else schedules.push(data);
+    if(id) { schedules = schedules.map(s => s.id == id ? data : s); } 
+    else { schedules.push(data); }
     
-    save(); 
-    closeModal(); 
-    renderAll();
+    save(); closeModal(); renderAll();
 };
 
+function openFleetModal() {
+    closeModal();
+    renderFleetList();
+    document.getElementById('modal-fleet').style.display = 'block';
+}
 
+
+function openExportModal() {
+    closeModal();
+    document.getElementById('modal-export').style.display = 'block';
+}
+
+function openSuratJalanModal(id) {
+    const s = schedules.find(x => x.id == id);
+    if (!s) return;
+    closeModal();
+    document.getElementById('sj-id').value = s.id;
+    document.getElementById('sj-fuel').value = s.fuel || 0;
+    document.getElementById('sj-toll').value = s.toll || 0;
+    document.getElementById('sj-tips').value = s.tips || 0;
+    document.getElementById('sj-note').value = s.sjNote || '';
+    document.getElementById('modal-surat-jalan').style.display = 'block';
+}
 
 function editSched(id) {
     const s = schedules.find(x => x.id == id); 
     if (!s) return;
+    closeModal();
+    tempSelectedBuses = []; 
+    const currentBusIds = s.busIds || [s.busId];
+    currentBusIds.forEach(bId => {
+        const b = buses.find(x => x.id == bId);
+        if(b) tempSelectedBuses.push({ id: b.id, name: `${b.name} (${b.plate})` });
+    });
+    renderSelectedBuses();
 
-    // 1. Set ID dan Judul
     document.getElementById('edit-id').value = s.id; 
     document.getElementById('sched-modal-title').innerText = "Edit Jadwal Sewa";
-
-    // 2. Buka Modal (Penting: panggil ini dulu agar form siap)
     openScheduleModal(s.date, true);
 
-    // 3. ISI SEMUA FIELD (Pastikan ID-nya benar)
     document.getElementById('f-trip').value = s.trip || '';
     document.getElementById('f-date').value = s.date || '';
-    document.getElementById('f-time').value = s.time || '00:00';
-	
-	document.getElementById('f-date-end').value = s.dateEnd || s.date;
-document.getElementById('f-time-end').value = s.timeEnd || '00:00';
-document.getElementById('f-duration').innerText = s.duration || '1';
-
-    document.getElementById('f-bus').value = s.busId || '';
-    
-    // Data Pemesan (Ini yang tadi undefined)
+    document.getElementById('f-time').value = s.time || '08:00';
+    document.getElementById('f-date-end').value = s.dateEnd || s.date;
+    document.getElementById('f-time-end').value = s.timeEnd || '17:00';
+    document.getElementById('f-duration').innerText = s.duration || '1';
     document.getElementById('f-cust').value = s.cust || '';
     document.getElementById('f-phone').value = s.phone || '';
     document.getElementById('f-addr').value = s.addr || '';
     document.getElementById('f-pickup').value = s.pickup || '';
-    
-    // Keuangan & Metode
     document.getElementById('f-price').value = s.price || 0;
     document.getElementById('f-status').value = s.status || 'Belum Bayar';
     document.getElementById('f-payment-method').value = s.paymentMethod || 'Tunai';
-    
     toggleDP(s.status); 
     document.getElementById('f-dp').value = s.dp || 0;
-
-    // Fitur Baru (Poin 4)
     document.getElementById('f-seats').value = s.seats || '';
     document.getElementById('f-extra-features').value = s.extraFeatures || '';
-
-    // Tampilkan Nama Bus di Input Pencarian
-    const b = buses.find(x => x.id == s.busId);
-    if(b) document.getElementById('f-bus-input').value = `${b.name} (${b.plate})`;
 }
+
+function formatDateDisplay(dateStr) {
+    if (!dateStr) return "-";
+    const [year, month, day] = dateStr.split('-');
+    return `${day}/${month}/${year}`;
+}
+
+function setQuickFilter(status) {
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) {
+        searchInput.value = status; 
+        renderSidebar();
+    }
+}
+
+
+
 
 
         function delSched(id) { if(confirm('Hapus jadwal ini?')) { schedules = schedules.filter(x => x.id !== id); save(); renderAll(); } }
@@ -1632,8 +1733,22 @@ document.getElementById('expense-form').onsubmit = (e) => {
 
 
         function deleteExpense(id) { if(confirm('Hapus data biaya ini?')) { expenses = expenses.filter(x => x.id !== id); save(); renderAll(); } }
-        function openFleetModal() { renderFleetList(); document.getElementById('modal-fleet').style.display = 'block'; }
-        function renderFleetList() { document.getElementById('fleet-list').innerHTML = buses.map(b => `<div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;"><div><b>${b.name}</b> (${b.plate})</div><div><button class="btn-orange" onclick="editBus(${b.id})">✏️</button><button class="btn-red" onclick="deleteBus(${b.id})">🗑️</button></div></div>`).join(''); }
+
+
+ function renderFleetList() {
+    const listDiv = document.getElementById('fleet-list');
+    if (!listDiv) return;
+
+    listDiv.innerHTML = buses.map(b => `
+        <div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
+            <div><b>${b.name}</b> (${b.plate})</div>
+            <div style="display:flex; gap:5px;">
+                <button type="button" class="btn-orange" style="padding:4px 8px" onclick="editBus(${b.id})">✏️</button>
+                <button type="button" class="btn-red" style="padding:4px 8px" onclick="deleteBus(${b.id})">🗑️</button>
+            </div>
+        </div>
+    `).join('');
+}
 
 
 
@@ -1687,13 +1802,19 @@ function editBus(id) {
     document.getElementById('bus-kir').value = b.kir || '';
     document.getElementById('bus-kps').value = b.kps || '';	
     
-    document.getElementById('fleet-form-title').innerText = 'Edit Unit'; 
-    document.getElementById('btn-save-bus').innerText = 'UPDATE UNIT'; 
-    document.getElementById('btn-cancel-bus').style.display = 'block';
+document.getElementById('fleet-form-title').innerText = 'Edit Unit Armada'; 
+document.getElementById('btn-save-bus').innerText = 'UPDATE UNIT'; 
+document.getElementById('btn-cancel-bus').style.display = 'block';
 }
 
         function deleteBus(id) { if(confirm('Hapus unit ini?')) { buses = buses.filter(x => x.id !== id); save(); renderFleetList(); renderAll(); } }
-        function resetFleetForm() { document.getElementById('fleet-form').reset(); document.getElementById('bus-edit-id').value = ''; document.getElementById('fleet-form-title').innerText = 'Tambah Unit Baru'; document.getElementById('btn-save-bus').innerText = 'TAMBAH UNIT'; document.getElementById('btn-cancel-bus').style.display = 'none'; }
+        function resetFleetForm() {
+    document.getElementById('fleet-form').reset();
+    document.getElementById('bus-edit-id').value = '';
+    document.getElementById('fleet-form-title').innerText = 'Tambah Unit Baru';
+    document.getElementById('btn-save-bus').innerText = 'SIMPAN UNIT';
+    document.getElementById('btn-cancel-bus').style.display = 'none';
+}
         function checkLegalAlerts() {
     const container = document.getElementById('legal-alerts');
     if (!container) return;
@@ -1751,7 +1872,11 @@ function sendWA(id) {
     if (!s) return;
 
     // Filter Nama Armada: Hanya kategori (sama seperti invoice)
-    const armadaDisplay = b?.category || b?.name || '-';
+    const busIds = s.busIds || [s.busId]; // Ambil array bus
+const armadaDisplay = busIds.map(bId => {
+    const bData = buses.find(x => x.id == bId);
+    return bData ? bData.name : '-';
+}).join(', '); // Hasilnya: "Bus A, Bus B"
     const sisa = s.price - (s.dp || 0);
 
     // Susun teks pesan
@@ -1884,7 +2009,11 @@ Jika ada pertanyaan lebih lanjut, silakan hubungi kami kembali. Sampai jumpa di 
                 <div class="info-box">
                     <h4>Detail Perjalanan</h4>
                     <p><span>Tujuan</span>:&nbsp;<b>${s.trip}</b></p>
-                    <p><span>Armada</span>:&nbsp;<b>${b?.category || b?.name || '-'}</b></p>
+                    <p><span>Armada</span>:&nbsp;<b>${(s.busIds || [s.busId]).map(bId => {
+        const bData = buses.find(x => x.id == bId);
+        return bData ? (bData.category || bData.name) : '-';
+    }).join(' + ')}
+</b></p>
                     <p><span>Kapasitas</span>:&nbsp;${s.seats ? s.seats + ' Seat' : '-'}</p>
 					<p><span>Fasilitas</span>:&nbsp;${[b?.features, s.extraFeatures].filter(x => x).join(', ') || '-'}</p>
 					<p><span>Penjemputan</span>:&nbsp;${s.pickup || '-'}</p>
@@ -1966,10 +2095,6 @@ Jika ada pertanyaan lebih lanjut, silakan hubungi kami kembali. Sampai jumpa di 
 }
 
 
-// 1. Fungsi untuk MEMBUKA jendela (modal) Export
-function openExportModal() {
-    document.getElementById('modal-export').style.display = 'block';
-}
 
 // 2. Fungsi untuk MEMPROSES download Excel (Pastikan namanya sama)
 function processExport() {
@@ -2147,11 +2272,7 @@ function processExport() {
 
 
 // Fungsi untuk mengubah format tanggal YYYY-MM-DD menjadi DD/MM/YYYY
-function formatDateDisplay(dateStr) {
-    if (!dateStr) return "-";
-    const [year, month, day] = dateStr.split('-');
-    return `${day}/${month}/${year}`;
-}
+
 
 function setQuickFilter(status) {
     const searchInput = document.getElementById('search-input');
