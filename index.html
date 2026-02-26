@@ -2074,7 +2074,7 @@ Jika ada pertanyaan lebih lanjut, silakan hubungi kami kembali. Sampai jumpa di 
         return bData ? (bData.category || bData.name) : '-';
     }).join(' + ')}
 </b></p>
-                    <p><span>Kapasitas</span>:&nbsp;${s.seats ? s.seats + ' Seat' : '-'}</p>
+                    <p><span>Jumlah Kursi</span>:&nbsp;${s.seats ? s.seats + ' Seat' : '-'}</p>
 <p><span>Fasilitas</span>:&nbsp;${(() => {
         let listFas = [];
         const busIds = s.busIds || [s.busId];
@@ -2364,5 +2364,6 @@ function setQuickFilter(status) {
     </script>
 </body>
 </html>
+
 
 
