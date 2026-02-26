@@ -1905,18 +1905,28 @@ document.getElementById('btn-cancel-bus').style.display = 'block';
 
 function sendWA(id) {
     const s = schedules.find(x => x.id == id);
-    const b = buses.find(x => x.id == s.busId);
     if (!s) return;
 
-    // Filter Nama Armada: Hanya kategori (sama seperti invoice)
-    const busIds = s.busIds || [s.busId]; // Ambil array bus
-const armadaDisplay = busIds.map(bId => {
-    const bData = buses.find(x => x.id == bId);
-    return bData ? bData.name : '-';
-}).join(', '); // Hasilnya: "Bus A, Bus B"
+    // --- 1. LOGIKA AMBIL KATEGORI MULTI BUS ---
+    const busIds = s.busIds || [s.busId]; 
+    const armadaDisplay = busIds.map(bId => {
+        const bData = buses.find(x => x.id == bId);
+        return bData ? (bData.category || bData.name) : '-';
+    }).join(' + ');
+
+    // --- 2. LOGIKA GABUNG FASILITAS (UTAMA + TAMBAHAN) ---
+    // Kita ambil semua fasilitas dari tiap bus yang dipilih
+    let fasilitasUtama = busIds.map(bId => {
+        const bData = buses.find(x => x.id == bId);
+        return bData ? bData.features : '';
+    }).filter(f => f !== '').join(', '); // Gabungkan fasilitas antar bus jika berbeda
+
+    // Gabungkan dengan fasilitas tambahan dari form jadwal
+    const semuaFasilitas = [fasilitasUtama, s.extraFeatures].filter(x => x && x.trim() !== '').join(', ');
+
     const sisa = s.price - (s.dp || 0);
 
-    // Susun teks pesan
+    // --- 3. SUSUN TEKS PESAN ---
     const pesan = `*KONFIRMASI RESERVASI BUS*
 --------------------------------------------
 Halo Kak *${s.cust}*, terimakasih telah mempercayakan perjalanan Anda kepada *Tisal Trans Group*.
@@ -1926,10 +1936,9 @@ Berikut adalah rincian reservasi Anda:
 📅 *Berangkat:* ${formatDateDisplay(s.date)} (Jam ${s.time})
 🏁 *Estimasi Pulang:* ${formatDateDisplay(s.dateEnd)} (Jam ${s.timeEnd})
 ⏳ *Durasi:* ${s.duration || 1} Hari
-⏰ *Jam Standby:* ${s.time}
 🚌 *Armada:* ${armadaDisplay}
 🔢 *Kapasitas:* ${s.seats || '-'} Seat
-✨ *Fasilitas:* ${[b?.features, s.extraFeatures].filter(x => x).join(', ') || '-'}
+✨ *Fasilitas:* ${semuaFasilitas || '-'}
 📍 *Titik Jemput:* ${s.pickup || '-'}
 --------------------------------------------
 *Rincian Pembayaran:*
@@ -1949,13 +1958,12 @@ an. Arif Wahyudi
 
 Jika ada pertanyaan lebih lanjut, silakan hubungi kami kembali. Sampai jumpa di perjalanan! 🙏🏻`;
 
-    // BERSIHKAN NOMOR WA (Hapus spasi, strip, dll)
+    // BERSIHKAN NOMOR WA
     let phone = s.phone.replace(/\D/g, '');
     if (phone.startsWith('0')) {
         phone = '62' + phone.slice(1);
     }
 
-    // KIRIM DENGAN FORMAT YANG LEBIH STABIL
     const waUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(pesan)}`;
     window.open(waUrl, '_blank');
 }
@@ -2052,7 +2060,17 @@ Jika ada pertanyaan lebih lanjut, silakan hubungi kami kembali. Sampai jumpa di 
     }).join(' + ')}
 </b></p>
                     <p><span>Kapasitas</span>:&nbsp;${s.seats ? s.seats + ' Seat' : '-'}</p>
-					<p><span>Fasilitas</span>:&nbsp;${[b?.features, s.extraFeatures].filter(x => x).join(', ') || '-'}</p>
+					<p><span>Fasilitas</span>:&nbsp;${(() => {
+        // Ambil fasilitas utama dari semua bus yang dipilih
+        const busIds = s.busIds || [s.busId];
+        const fUtama = busIds.map(bId => {
+            const bData = buses.find(x => x.id == bId);
+            return bData ? bData.features : '';
+        }).filter(f => f !== '').join(', ');
+
+        // Gabungkan dengan fasilitas tambahan di jadwal
+        return [fUtama, s.extraFeatures].filter(x => x && x.trim() !== '').join(', ') || '-';
+    })()}</p>
 					<p><span>Penjemputan</span>:&nbsp;${s.pickup || '-'}</p>
                 </div>
             </div>
