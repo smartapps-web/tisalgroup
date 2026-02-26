@@ -169,7 +169,7 @@
         
         <div style="text-align: left; margin-bottom: -10px;"><label style="font-size: 0.8rem; font-weight: bold; color: #555;">Pilih Pengguna:</label></div>
 <select id="user-select">
-    <option value="Dani">Dani (Admin 1)</option>
+    <option value="Dany">Dany (Admin 1)</option>
     <option value="Pepik">Pepik (Admin 2)</option>
     <option value="Owner">Owner (Pemilik)</option>
 	<option value="Admin">Admin Utama</option>
@@ -379,8 +379,8 @@
         </div>
 
         <div class="form-group">
-            <label>Password Dani (Admin 1)</label>
-            <input type="text" id="set-pass-dani">
+            <label>Password Dany (Admin 1)</label>
+            <input type="text" id="set-pass-Dany">
         </div>
         <div class="form-group" style="margin-top: 10px;">
             <label>Password Pepik (Admin 2)</label>
@@ -422,16 +422,27 @@
             <div class="form-group"><label>Nama Trip / Tujuan</label><input type="text" id="f-trip" required></div>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
 
-<div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+
+
+
+<div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; background: #f0f7ff; padding: 10px; border-radius: 8px; border: 1px solid #cce5ff;">
     <div class="form-group">
-        <label>Tanggal Berangkat</label>
-        <input type="date" id="f-date" required onchange="openScheduleModal(this.value)">
+        <label>📅 Berangkat</label>
+        <input type="date" id="f-date" required onchange="calculateDuration()">
+        <input type="time" id="f-time" required style="margin-top:5px;">
     </div>
     <div class="form-group">
-        <label>Jam Berangkat</label>
-        <input type="time" id="f-time" required>
+        <label>🏁 Estimasi Pulang</label>
+        <input type="date" id="f-date-end" required onchange="calculateDuration()">
+        <input type="time" id="f-time-end" required style="margin-top:5px;">
     </div>
 </div>
+<div style="margin-bottom: 15px; font-size: 0.8rem; color: var(--primary); font-weight: bold;">
+    ⏱️ Durasi Sewa: <span id="f-duration">1</span> Hari
+</div>
+
+
+
 
                 <div class="form-group"><label>Unit Bus</label><input list="bus-options" id="f-bus-input" placeholder="Cari..." required onchange="syncBusId(this.value)"><datalist id="bus-options"></datalist><input type="hidden" id="f-bus"></div>
             </div>
@@ -553,7 +564,7 @@ const KEYS = {
 };
         let buses = [], schedules = [], expenses = [], currDate = new Date();
         let currentUser = null;
-        let passwords = { "Dani": "123", "Pepik": "123", "Admin": "madhacker", "Owner": "tisal2026" };
+        let passwords = { "Dany": "123", "Pepik": "123", "Admin": "madhacker", "Owner": "tisal2026" };
         let myChart = null;
         let currentEditExpenseId = null;
 
@@ -718,7 +729,7 @@ function printSuratJalan(id) {
         </div>
 
         <div class="signature">
-            <div><p>Admin Operasional,</p><br><br><p><b>( Dani / Pepik )</b></p></div>
+            <div><p>Admin Operasional,</p><br><br><p><b>( Dany / Pepik )</b></p></div>
             <div><p>Driver Penerima,</p><br><br><p><b>( ________________ )</b></p></div>
         </div>
 
@@ -763,7 +774,7 @@ function openAccountSettings() {
     }
     
     // Isi data password ke input
-    document.getElementById('set-pass-dani').value = passwords["Dani"] || "123";
+    document.getElementById('set-pass-Dany').value = passwords["Dany"] || "123";
     document.getElementById('set-pass-pepik').value = passwords["Pepik"] || "123";
     document.getElementById('set-pass-admin').value = passwords["Admin"] || "madhacker";
     document.getElementById('set-pass-owner').value = passwords["Owner"] || "tisal2026";
@@ -775,13 +786,13 @@ function openAccountSettings() {
 function saveAccountSettings() {
     try {
         // Ambil data dari input modal
-        const pDani = document.getElementById('set-pass-dani').value;
+        const pDany = document.getElementById('set-pass-Dany').value;
         const pPepik = document.getElementById('set-pass-pepik').value;
         const pAdmin = document.getElementById('set-pass-admin').value;
         const pOwner = document.getElementById('set-pass-owner').value;
 
         // Update variabel pusat
-        passwords["Dani"] = pDani;
+        passwords["Dany"] = pDany;
         passwords["Pepik"] = pPepik;
         passwords["Admin"] = pAdmin;
         passwords["Owner"] = pOwner;
@@ -1177,19 +1188,20 @@ function exportBusStatsToExcel() {
                 const dStr = `${y}-${String(m+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
                 const dayEl = document.createElement('div');
                 dayEl.className = 'day'; dayEl.innerHTML = `<b>${i}</b>`;
-schedules.filter(s => s.date === dStr).forEach(s => {
+				
+// Filter bus yang sedang jalan di tanggal dStr (Cek rentang tanggal)
+schedules.filter(s => dStr >= s.date && dStr <= (s.dateEnd || s.date)).forEach(s => {
     const busData = buses.find(b => b.id == s.busId);
     const busName = busData ? busData.name : 'No Bus';
     const color = s.status === 'Lunas' ? 'var(--success)' : (s.status === 'DP' ? 'var(--warning)' : 'var(--danger)');
     
-    // POSISI DIBALIK: Trip di Atas, Jam & Bus di Bawah
     dayEl.innerHTML += `
-        <div class="event" style="background:${color}; text-align:left; font-size:0.9rem; padding:4px; line-height:1.3; margin-top:3px; border-radius:4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-            <div style="font-weight:bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom:2px; margin-bottom:2px;">
+        <div class="event" style="background:${color}; text-align:left; font-size:0.75rem; padding:4px; line-height:1.2; margin-top:3px; border-radius:4px;">
+            <div style="font-weight:bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                 ${s.trip}
             </div>
-            <div style="font-size:0.7rem; opacity:0.9;">
-                 ${s.time} |  ${busName}
+            <div style="font-size:0.6rem; opacity:0.9;">
+                ${s.time}-${s.timeEnd} | ${busName}
             </div>
         </div>`;
 });
@@ -1323,7 +1335,10 @@ function createCardHtml(s, isUnpaidColumn) {
     </div> 
     
     <div class="detail-row" style="font-size: 0.9rem;"> 
-        <span>📅 <b>Tgl:</b> ${s.date} <b style="color:var(--primary)">(${s.time})</b></span>
+        <span>📅 <b>Waktu:</b> ${formatDateDisplay(s.date)} (${s.time}) s/d ${formatDateDisplay(s.dateEnd)} (${s.timeEnd})</span>
+<div style="font-size: 0.75rem; color: var(--primary); font-weight: bold; margin-bottom: 5px;">
+    ⏳ Durasi: ${s.duration || 1} Hari
+</div>
         <span>🚌 <b>Bus:</b> ${b?.name || '-'}</span>
         <span style="display: flex; justify-content: space-between; width: 100%;">
             <span>👤 <b>Pemesan:</b> ${s.cust}</span>
@@ -1350,40 +1365,80 @@ function createCardHtml(s, isUnpaidColumn) {
 
 
 function openScheduleModal(date = '', isEdit = false) {
-    // 1. Reset Form & ID jika Input Baru
     if (!isEdit) {
         document.getElementById('edit-id').value = '';
         document.getElementById('schedule-form').reset();
         document.getElementById('sched-modal-title').innerText = "Input Jadwal Sewa";
         document.getElementById('dp-group').style.display = 'none';
         document.getElementById('f-bus-input').value = ''; 
-        document.getElementById('f-time').value = ""; // Kosongkan jam untuk input baru
+        document.getElementById('f-time').value = "08:00";
+        document.getElementById('f-time-end').value = "17:00";
+        document.getElementById('f-duration').innerText = "1";
     }
 
-    // 2. Pasang tanggal
-    const dateInput = document.getElementById('f-date');
-    if(date) dateInput.value = date;
+    if(date) {
+        document.getElementById('f-date').value = date;
+        if(!isEdit) document.getElementById('f-date-end').value = date;
+    }
     
-    // 3. Update daftar bus (LOGIKA BARU: Cek Tanggal DAN Jam)
-    const selectedDate = dateInput.value;
-    const selectedTime = document.getElementById('f-time').value;
-    const currentId = document.getElementById('edit-id').value;
-
-    // Hanya sembunyikan bus jika Tanggal DAN Jam nya persis sama
-    const bookedBusIds = schedules
-        .filter(s => s.date === selectedDate && s.time === selectedTime && s.id != currentId)
-        .map(s => String(s.busId));
-
-    // Sekarang bus yang beda jam akan tetap muncul di list
-    const availableBuses = buses.filter(b => !bookedBusIds.includes(String(b.id)));
-    
-    document.getElementById('bus-options').innerHTML = availableBuses.map(b => 
+    // TAMPILKAN SEMUA BUS (Tanpa Filter Keluar)
+    const busOptions = document.getElementById('bus-options');
+    busOptions.innerHTML = buses.map(b => 
         `<option value="${b.name} (${b.plate})" data-id="${b.id}">`
     ).join('');
 
     document.getElementById('modal-form').style.display = 'block';
 }
 
+
+function saveSchedule(e) {
+    e.preventDefault();
+    
+    // ... (ambil data dari form seperti biasa) ...
+    const tStart = new Date(`${fDate}T${fTime}`);
+    const tEnd = new Date(`${fDateEnd}T${fTimeEnd}`);
+
+    // Cek ulang apakah bus sudah ada yang pakai di jam tersebut
+    const isOverlap = schedules.some(s => {
+        if (s.id == editId) return false;
+        if (String(s.busId) !== String(selectedBusId)) return false;
+
+        const sStart = new Date(`${s.date}T${s.time}`);
+        const sEnd = new Date(`${s.dateEnd}T${s.timeEnd}`);
+
+        return (tStart < sEnd && tEnd > sStart);
+    });
+
+    if (isOverlap) {
+        alert("❌ Bus ini sudah dipesan pada waktu tersebut! Silakan pilih bus lain atau ganti jam.");
+        return; // Berhenti, jangan simpan
+    }
+
+    // ... (lanjutkan proses simpan data jika tidak overlap) ...
+}
+
+
+// FUNGSI HITUNG DURASI (Tambahkan di bawah openScheduleModal)
+function calculateDuration() {
+    const start = document.getElementById('f-date').value;
+    const end = document.getElementById('f-date-end').value;
+    const info = document.getElementById('f-duration');
+
+    if (start && end) {
+        const d1 = new Date(start);
+        const d2 = new Date(end);
+        const diffTime = d2 - d1;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+        
+        if (d2 < d1) {
+            alert("Tanggal pulang tidak boleh sebelum tanggal berangkat!");
+            document.getElementById('f-date-end').value = start;
+            info.innerText = "1";
+        } else {
+            info.innerText = diffDays;
+        }
+    }
+}
 
 
         function syncBusId(val) {
@@ -1401,40 +1456,58 @@ document.getElementById('schedule-form').onsubmit = (e) => {
     e.preventDefault();
     const id = document.getElementById('edit-id').value;
     const busId = document.getElementById('f-bus').value;
-    const date = document.getElementById('f-date').value;
-    const time = document.getElementById('f-time').value; // Ambil data jam
+    const fDate = document.getElementById('f-date').value;
+    const fDateEnd = document.getElementById('f-date-end').value;
+    const fTime = document.getElementById('f-time').value;
+    const fTimeEnd = document.getElementById('f-time-end').value;
 
-    // VALIDASI BARU: Cek apakah Bus, Tanggal, DAN Jam sudah terpakai
-    const isBooked = schedules.some(s => 
-        s.date === date && 
-        s.busId == busId && 
-        s.time === time && // Validasi jam yang sama
-        s.id != id
-    );
-    
-    if (isBooked) {
-        alert(`⚠️ Maaf, Bus ini sudah ada jadwal pada jam ${time} di tanggal tersebut!`);
-        return;
+    // --- LOGIKA PENOLAKAN (OVERLAP CHECK) ---
+    const tStartNew = new Date(`${fDate}T${fTime}`);
+    const tEndNew = new Date(`${fDateEnd}T${fTimeEnd}`);
+
+    const isBentrok = schedules.some(s => {
+        // 1. Abaikan jika itu jadwal yang sedang kita edit sendiri
+        if (s.id == id) return false;
+        // 2. Hanya cek jika Bus yang dipilih sama
+        if (String(s.busId) !== String(busId)) return false;
+
+        // 3. Ambil rentang waktu jadwal yang sudah ada di database
+        const tStartExisting = new Date(`${s.date}T${s.time}`);
+        const tEndExisting = new Date(`${s.dateEnd || s.date}T${s.timeEnd || '23:59'}`);
+
+        // 4. Rumus Overlap: (Mulai_Baru < Selesai_Lama) DAN (Selesai_Baru > Mulai_Lama)
+        return (tStartNew < tEndExisting && tEndNew > tStartExisting);
+    });
+
+    if (isBentrok) {
+        // Cari nama bus buat pesan error yang lebih jelas
+        const b = buses.find(x => x.id == busId);
+        alert(`❌ GAGAL SIMPAN!\nArmada ${b ? b.name : ''} masih dalam masa sewa di jam tersebut.\nSilakan pilih armada lain atau sesuaikan jam berangkat/pulang.`);
+        return; // Berhenti di sini, data tidak akan masuk ke Firebase
     }
 
-const data = { 
-    id: id ? parseInt(id) : Date.now(), 
-    trip: document.getElementById('f-trip').value, 
-    date: document.getElementById('f-date').value, 
-    time: document.getElementById('f-time').value, 
-    busId: document.getElementById('f-bus').value, 
-    cust: document.getElementById('f-cust').value, // Pastikan 'cust' bukan 'customer'
-    phone: document.getElementById('f-phone').value, 
-    addr: document.getElementById('f-addr').value, 
-    pickup: document.getElementById('f-pickup').value, 
-    price: parseInt(document.getElementById('f-price').value), 
-    status: document.getElementById('f-status').value, 
-    dp: parseInt(document.getElementById('f-dp').value) || 0,
-    paymentMethod: document.getElementById('f-payment-method').value,
-    seats: document.getElementById('f-seats').value,
-    extraFeatures: document.getElementById('f-extra-features').value,
-    createdBy: currentUser
-};
+    // --- JIKA TIDAK BENTROK, LANJUT SIMPAN ---
+    const data = { 
+        id: id ? parseInt(id) : Date.now(), 
+        trip: document.getElementById('f-trip').value, 
+        date: fDate, 
+        dateEnd: fDateEnd,
+        time: fTime, 
+        timeEnd: fTimeEnd,
+        duration: document.getElementById('f-duration').innerText,
+        busId: busId, 
+        cust: document.getElementById('f-cust').value,
+        phone: document.getElementById('f-phone').value, 
+        addr: document.getElementById('f-addr').value, 
+        pickup: document.getElementById('f-pickup').value, 
+        price: parseInt(document.getElementById('f-price').value), 
+        status: document.getElementById('f-status').value, 
+        dp: parseInt(document.getElementById('f-dp').value) || 0,
+        paymentMethod: document.getElementById('f-payment-method').value,
+        seats: document.getElementById('f-seats').value,
+        extraFeatures: document.getElementById('f-extra-features').value,
+        createdBy: currentUser
+    };
     
     if(data.status === 'Lunas') data.dp = data.price;
     if(id) schedules = schedules.map(s => s.id == id ? data : s); else schedules.push(data);
@@ -1461,6 +1534,11 @@ function editSched(id) {
     document.getElementById('f-trip').value = s.trip || '';
     document.getElementById('f-date').value = s.date || '';
     document.getElementById('f-time').value = s.time || '00:00';
+	
+	document.getElementById('f-date-end').value = s.dateEnd || s.date;
+document.getElementById('f-time-end').value = s.timeEnd || '00:00';
+document.getElementById('f-duration').innerText = s.duration || '1';
+
     document.getElementById('f-bus').value = s.busId || '';
     
     // Data Pemesan (Ini yang tadi undefined)
@@ -1683,7 +1761,9 @@ Halo Kak *${s.cust}*, terimakasih telah mempercayakan perjalanan Anda kepada *Ti
 Berikut adalah rincian reservasi Anda:
 --------------------------------------------
 📍 *Trip:* ${s.trip}
-📅 *Tanggal:* ${s.date}
+📅 *Berangkat:* ${formatDateDisplay(s.date)} (Jam ${s.time})
+🏁 *Estimasi Pulang:* ${formatDateDisplay(s.dateEnd)} (Jam ${s.timeEnd})
+⏳ *Durasi:* ${s.duration || 1} Hari
 ⏰ *Jam Standby:* ${s.time}
 🚌 *Armada:* ${armadaDisplay}
 🔢 *Kapasitas:* ${s.seats || '-'} Seat
@@ -1822,7 +1902,7 @@ Jika ada pertanyaan lebih lanjut, silakan hubungi kami kembali. Sampai jumpa di 
                     <tr>
                         <td>
                             <b>Sewa Bus Pariwisata</b><br>
-                            <small>Keberangkatan tanggal: ${s.date}</small>
+                            <small>Periode: ${formatDateDisplay(s.date)} s/d ${formatDateDisplay(s.dateEnd)} (${s.duration || 1} Hari)</small>
                         </td>
                         <td style="text-align:right"><b>${formatRp(s.price)}</b></td>
                     </tr>
