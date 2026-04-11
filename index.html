@@ -637,6 +637,40 @@
     </div>
 	
     <script>
+	
+	// --- PERBAIKAN SISTEM KEAMANAN (ENTER TETAP BISA) ---
+
+document.onkeydown = function(e) {
+    // 1. IZINKAN tombol Enter (Key Code 13) supaya bisa login
+    if (e.keyCode == 13) {
+        return true; 
+    }
+
+    // 2. Blokir F12 (DevTools)
+    if (e.keyCode == 123) {
+        return false;
+    }
+
+    // 3. Blokir Shortcut Inspeksi (Ctrl+Shift+I, J, C)
+    if (e.ctrlKey && e.shiftKey && (e.keyCode == 'I'.charCodeAt(0) || e.keyCode == 'J'.charCodeAt(0) || e.keyCode == 'C'.charCodeAt(0))) {
+        return false;
+    }
+
+    // 4. Blokir Ctrl+U (View Source)
+    if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) {
+        return false;
+    }
+
+    // 5. Blokir Ctrl+S (Save Page)
+    if (e.ctrlKey && e.keyCode == 'S'.charCodeAt(0)) {
+        return false;
+    }
+};
+
+// Tetap aktifkan blokir klik kanan
+document.addEventListener('contextmenu', e => e.preventDefault());
+
+
 const KEYS = { 
     BUS: 'tisal_bus_v1', 
     SCHED: 'tisal_sched_v1', 
@@ -2364,6 +2398,3 @@ function setQuickFilter(status) {
     </script>
 </body>
 </html>
-
-
-
