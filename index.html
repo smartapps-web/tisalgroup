@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistem Manajemen Jadwal Bus Tisal 2027</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex flex-col">
+
+  <!-- Header Navigasi -->
+  <header class="bg-indigo-900 text-white shadow-md sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="bg-indigo-600 p-2 rounded-lg text-white">
+          <i class="fa-solid fa-bus text-xl"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-lg leading-tight">Jadwal Bus Tisal 2027</h1>
+          <p class="text-xs text-indigo-200">PT. Tisal Trans Group — Live Google Sheets Sync</p>
+        </div>
+      </div>
+      <div>
+        <button onclick="openModalForAdd()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center shadow transition duration-150">
+          <i class="fa-solid fa-plus mr-2"></i> Tambah Jadwal
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Konten Utama -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow w-full">
+
+    <!-- Control Panel & Filter -->
+    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div class="flex items-center space-x-3">
+        <label for="selectBulan" class="text-sm font-semibold text-slate-600 flex items-center">
+          <i class="fa-regular fa-calendar-days text-indigo-600 mr-2"></i> Pilih Bulan:
+        </label>
+        <select id="selectBulan" onchange="fetchData()" class="bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 p-2.5 font-medium">
+          <option value="Januari" selected>Januari 2027</option>
+          <option value="Februari">Februari 2027</option>
+          <option value="Maret">Maret 2027</option>
+          <option value="April">April 2027</option>
+          <option value="Mei">Mei 2027</option>
+          <option value="Juni">Juni 2027</option>
+          <option value="Juli">Juli 2027</option>
+          <option value="Agustus">Agustus 2027</option>
+          <option value="September">September 2027</option>
+          <option value="Oktober">Oktober 2027</option>
+          <option value="November">November 2027</option>
+          <option value="Desember">Desember 2027</option>
+        </select>
+      </div>
+
+      <div class="relative w-full md:w-72">
+        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </div>
+        <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Cari bus, tujuan, agen..." class="bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-9 p-2.5">
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center">
+        <div class="p-3 bg-blue-100 text-blue-600 rounded-lg mr-4">
+          <i class="fa-solid fa-clipboard-list text-xl"></i>
+        </div>
+        <div>
+          <p class="text-xs text-slate-500 font-medium">Total Booking Bulan Ini</p>
+          <h3 id="statTotal" class="text-2xl font-bold text-slate-800">0</h3>
+        </div>
+      </div>
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center">
+        <div class="p-3 bg-emerald-100 text-emerald-600 rounded-lg mr-4">
+          <i class="fa-solid fa-bus-simple text-xl"></i>
+        </div>
+        <div>
+          <p class="text-xs text-slate-500 font-medium">Unit Terjadwal</p>
+          <h3 id="statUnit" class="text-2xl font-bold text-slate-800">0</h3>
+        </div>
+      </div>
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center">
+        <div class="p-3 bg-amber-100 text-amber-600 rounded-lg mr-4">
+          <i class="fa-solid fa-hand-holding-dollar text-xl"></i>
+        </div>
+        <div>
+          <p class="text-xs text-slate-500 font-medium">Status Data Sync</p>
+          <h3 id="statStatus" class="text-sm font-semibold text-emerald-600"><i class="fa-solid fa-circle-check"></i> Connected</h3>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabel Data -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left text-slate-600" id="jadwalTable">
+          <thead class="text-xs text-slate-700 uppercase bg-slate-50 border-b border-slate-200">
+            <tr>
+              <th scope="col" class="px-4 py-3 text-center">Tgl</th>
+              <th scope="col" class="px-4 py-3">Armada Bus</th>
+              <th scope="col" class="px-4 py-3">Tujuan Wisata</th>
+              <th scope="col" class="px-4 py-3">Lokasi Penjemputan</th>
+              <th scope="col" class="px-4 py-3">Harga</th>
+              <th scope="col" class="px-4 py-3">DP</th>
+              <th scope="col" class="px-4 py-3">Kekurangan</th>
+              <th scope="col" class="px-4 py-3">Agen / Pemesan</th>
+              <th scope="col" class="px-4 py-3 text-center">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <tr>
+              <td colspan="9" class="text-center py-8 text-slate-400">
+                <i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i>
+                <p>Mengambil data dari Google Sheets...</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal Form (Tambah / Edit) -->
+  <div id="modalForm" class="fixed inset-0 bg-slate-900 bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-lg w-full overflow-hidden transform transition-all">
+      <div class="bg-indigo-900 px-6 py-4 text-white flex justify-between items-center">
+        <h3 id="modalTitle" class="font-bold text-lg"><i class="fa-solid fa-pen-to-square mr-2"></i>Tambah Jadwal Bus</h3>
+        <button onclick="closeModal()" class="text-indigo-200 hover:text-white text-xl font-bold">&times;</button>
+      </div>
+      <form id="addScheduleForm" onsubmit="submitData(event)" class="p-6 space-y-4">
+        <!-- Hidden input untuk menyimpan row_id dan mode aksi -->
+        <input type="hidden" id="formRowId" value="">
+        <input type="hidden" id="formAction" value="add">
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Bulan Tujuan</label>
+          <select id="formBulan" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm bg-slate-50 font-medium">
+            <option value="Januari">Januari 2027</option>
+            <option value="Februari">Februari 2027</option>
+            <option value="Maret">Maret 2027</option>
+            <option value="April">April 2027</option>
+            <option value="Mei">Mei 2027</option>
+            <option value="Juni">Juni 2027</option>
+            <option value="Juli">Juli 2027</option>
+            <option value="Agustus">Agustus 2027</option>
+            <option value="September">September 2027</option>
+            <option value="Oktober">Oktober 2027</option>
+            <option value="November">November 2027</option>
+            <option value="Desember">Desember 2027</option>
+          </select>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Tanggal</label>
+            <input type="text" id="formTgl" required placeholder="Tgl (misal: 1 atau 3-6)" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Armada / Bus</label>
+            <input type="text" id="formBus" required placeholder="Contoh: JB5, SR3" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Tujuan</label>
+            <input type="text" id="formTujuan" placeholder="Destinasi Wisata" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Jemputan</label>
+            <input type="text" id="formJemputan" placeholder="Titik Jemput" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm">
+          </div>
+        </div>
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Harga</label>
+            <input type="text" id="formHarga" placeholder="Rp" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">DP</label>
+            <input type="text" id="formDp" placeholder="DP" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Kekurangan</label>
+            <input type="text" id="formKekurangan" placeholder="Sisa" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Keterangan / Agent</label>
+          <input type="text" id="formKeterangan" placeholder="Contoh: 082133186661/p yudi" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm">
+        </div>
+        <div class="pt-2 flex justify-end space-x-3">
+          <button type="button" onclick="closeModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-600 hover:bg-slate-50 font-medium">Batal</button>
+          <button type="submit" id="btnSubmit" class="px-4 py-2 bg-indigo-900 hover:bg-indigo-800 text-white rounded-lg text-sm font-semibold flex items-center shadow">
+            <span>Simpan</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyK6iFvXtxP8Sa8Le-xttJB_c76sLtrOoK9nJTBGdTUTupQaq1VrQDXeKQlW3oGpdSFLw/exec";
+    let rawData = [];
+
+    async function fetchData() {
+      const bulan = document.getElementById('selectBulan').value;
+      const tbody = document.getElementById('tableBody');
+      
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="9" class="text-center py-8 text-slate-400">
+            <i class="fa-solid fa-circle-notch fa-spin text-2xl mb-2 text-indigo-600"></i>
+            <p>Memuat jadwal bulan ${bulan}...</p>
+          </td>
+        </tr>`;
+
+      try {
+        const response = await fetch(`${SCRIPT_URL}?sheet=${encodeURIComponent(bulan)}`);
+        const result = await response.json();
+
+        if (result.status === "success") {
+          rawData = result.data;
+          renderTable(rawData);
+          updateStats(rawData);
+        } else {
+          tbody.innerHTML = `<tr><td colspan="9" class="text-center py-6 text-rose-500 font-medium">Gagal memuat data: ${result.message}</td></tr>`;
+        }
+      } catch (error) {
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center py-6 text-rose-500 font-medium">Terjadi kesalahan koneksi ke server.</td></tr>`;
+      }
+    }
+
+    function renderTable(data) {
+      const tbody = document.getElementById('tableBody');
+      tbody.innerHTML = '';
+
+      if (data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center py-8 text-slate-400">Belum ada data jadwal untuk bulan ini.</td></tr>`;
+        return;
+      }
+
+      data.forEach((row) => {
+        const isCancel = row.bus.toLowerCase().includes('cancel') || row.keterangan.toLowerCase().includes('cancel');
+        const trClass = isCancel ? 'bg-rose-50/60 text-slate-400' : 'hover:bg-slate-50 border-b border-slate-100';
+
+        tbody.innerHTML += `
+          <tr class="${trClass}">
+            <td class="px-4 py-3 font-semibold text-center text-indigo-900">${row.tgl}</td>
+            <td class="px-4 py-3 font-medium text-slate-900">${row.bus}</td>
+            <td class="px-4 py-3">${row.tujuan}</td>
+            <td class="px-4 py-3">${row.jemputan}</td>
+            <td class="px-4 py-3 font-medium">${row.harga}</td>
+            <td class="px-4 py-3 text-emerald-600 font-medium">${row.dp}</td>
+            <td class="px-4 py-3 text-amber-600 font-medium">${row.kekurangan}</td>
+            <td class="px-4 py-3 text-xs text-slate-500">${row.keterangan}</td>
+            <td class="px-4 py-3 text-center">
+              <button onclick="openModalForEdit(${row.row_id})" class="bg-amber-500 hover:bg-amber-600 text-white p-1.5 rounded-md text-xs transition" title="Edit Jadwal">
+                <i class="fa-solid fa-pen"></i> Edit
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function updateStats(data) {
+      document.getElementById('statTotal').innerText = data.length;
+      const validUnits = data.filter(r => !r.bus.toLowerCase().includes('cancel')).length;
+      document.getElementById('statUnit').innerText = validUnits;
+    }
+
+    function filterTable() {
+      const query = document.getElementById('searchInput').value.toLowerCase();
+      const filtered = rawData.filter(item => 
+        item.bus.toLowerCase().includes(query) ||
+        item.tujuan.toLowerCase().includes(query) ||
+        item.jemputan.toLowerCase().includes(query) ||
+        item.keterangan.toLowerCase().includes(query)
+      );
+      renderTable(filtered);
+    }
+
+    // Modal Tambah
+    function openModalForAdd() {
+      document.getElementById('addScheduleForm').reset();
+      document.getElementById('formAction').value = "add";
+      document.getElementById('formRowId').value = "";
+      document.getElementById('modalTitle').innerHTML = `<i class="fa-solid fa-plus mr-2"></i>Tambah Jadwal Bus`;
+      document.getElementById('formBulan').value = document.getElementById('selectBulan').value;
+      document.getElementById('modalForm').classList.remove('hidden');
+    }
+
+    // Modal Edit
+    function openModalForEdit(rowId) {
+      const item = rawData.find(r => r.row_id === rowId);
+      if (!item) return;
+
+      document.getElementById('formAction').value = "update";
+      document.getElementById('formRowId').value = item.row_id;
+      document.getElementById('modalTitle').innerHTML = `<i class="fa-solid fa-pen-to-square mr-2"></i>Edit Jadwal Bus (Baris ${item.row_id})`;
+      
+      document.getElementById('formBulan').value = document.getElementById('selectBulan').value;
+      document.getElementById('formTgl').value = item.tgl;
+      document.getElementById('formBus').value = item.bus;
+      document.getElementById('formTujuan').value = item.tujuan;
+      document.getElementById('formJemputan').value = item.jemputan;
+      document.getElementById('formHarga').value = item.harga;
+      document.getElementById('formDp').value = item.dp;
+      document.getElementById('formKekurangan').value = item.kekurangan;
+      document.getElementById('formKeterangan').value = item.keterangan;
+
+      document.getElementById('modalForm').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('modalForm').classList.add('hidden');
+      document.getElementById('addScheduleForm').reset();
+    }
+
+    async function submitData(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btnSubmit');
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> Menyimpan...`;
+      btn.disabled = true;
+
+      const targetBulan = document.getElementById('formBulan').value;
+
+      const payload = {
+        action: document.getElementById('formAction').value,
+        row_id: document.getElementById('formRowId').value,
+        bulan: targetBulan,
+        tgl: document.getElementById('formTgl').value,
+        bus: document.getElementById('formBus').value,
+        tujuan: document.getElementById('formTujuan').value,
+        jemputan: document.getElementById('formJemputan').value,
+        harga: document.getElementById('formHarga').value,
+        dp: document.getElementById('formDp').value,
+        kekurangan: document.getElementById('formKekurangan').value,
+        keterangan: document.getElementById('formKeterangan').value
+      };
+
+      try {
+        await fetch(SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify(payload)
+        });
+
+        alert("Berhasil menyimpan perubahan ke Google Sheets!");
+        closeModal();
+
+        document.getElementById('selectBulan').value = targetBulan;
+
+        setTimeout(() => {
+          fetchData();
+        }, 1500);
+
+      } catch (err) {
+        alert("Gagal menyimpan data. Silakan coba lagi.");
+      } finally {
+        btn.innerHTML = `<span>Simpan</span>`;
+        btn.disabled = false;
+      }
+    }
+
+    window.onload = () => {
+      fetchData();
+    };
+  </script>
+</body>
+</html>
