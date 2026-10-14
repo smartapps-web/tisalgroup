@@ -3,166 +3,485 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sistem Manajemen Jadwal Bus Tisal 2027</title>
+  <title>Sistem Manajemen Jadwal Bus & Kwitansi Tisal 2027</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
     body { font-family: 'Inter', sans-serif; }
+    
+    @media print {
+      body * { visibility: hidden; }
+      #kwitansi-print-area, #kwitansi-print-area * { visibility: visible; }
+      #kwitansi-print-area {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        box-shadow: none !important;
+        border: none !important;
+      }
+      .no-print { display: none !important; }
+    }
   </style>
 </head>
 <body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex flex-col">
 
-  <!-- ================= LAYAR LOGIN ================= -->
-  <div id="loginSection" class="fixed inset-0 bg-slate-900 bg-opacity-95 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 border border-slate-100 text-center">
-      <div class="bg-indigo-600 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 text-white shadow-lg">
+  <!-- ================= SCREEN LOGIN ================= -->
+  <div id="loginScreen" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 border border-slate-800 text-center space-y-6">
+      <div class="bg-indigo-900 text-white w-16 h-16 rounded-2xl flex items-center justify-center mx-auto shadow-lg">
         <i class="fa-solid fa-bus text-3xl"></i>
       </div>
-      <h2 class="text-2xl font-bold text-slate-900 mb-1">Jadwal Bus Tisal 2027</h2>
-      <p class="text-xs text-slate-500 mb-6">PT. Tisal Trans Group — Silakan Login</p>
+      
+      <div>
+        <h2 class="text-2xl font-bold text-slate-900">PT. Tisal Trans Group</h2>
+        <p class="text-xs text-slate-500 mt-1">Smart Bus Manager & Kwitansi Generator</p>
+      </div>
 
       <form onsubmit="handleLogin(event)" class="space-y-4 text-left">
         <div>
-          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Password Akses</label>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Password Akses</label>
           <div class="relative">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-              <i class="fa-solid fa-lock"></i>
-            </div>
-            <input type="password" id="loginPassword" required placeholder="Masukkan password admin..." class="w-full pl-10 border border-slate-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+              <i class="fa-solid fa-key"></i>
+            </span>
+            <input type="password" id="loginPassword" required placeholder="Masukkan password..." class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-600 focus:outline-none">
           </div>
+          <p id="loginError" class="text-xs text-rose-600 font-semibold mt-2 hidden"><i class="fa-solid fa-circle-exclamation mr-1"></i> Password salah, silakan coba lagi!</p>
         </div>
-        <p id="loginError" class="text-xs text-rose-600 hidden font-semibold text-center"><i class="fa-solid fa-circle-exclamation mr-1"></i> Password salah! Silakan coba lagi.</p>
-        <button type="submit" class="w-full bg-indigo-900 hover:bg-indigo-800 text-white font-bold py-3 rounded-xl shadow-lg transition duration-200">
-          <i class="fa-solid fa-right-to-bracket mr-2"></i> Masuk Aplikasi
+
+        <button type="submit" class="w-full bg-indigo-900 hover:bg-indigo-800 text-white font-bold py-3 rounded-xl shadow-lg transition duration-150 flex items-center justify-center space-x-2">
+          <span>Masuk ke Aplikasi</span>
+          <i class="fa-solid fa-arrow-right text-xs"></i>
         </button>
       </form>
+
+      <p class="text-xs text-slate-400">&copy; 2026 PT. Tisal Trans Group</p>
     </div>
   </div>
 
-  <!-- ================= DASHBOARD UTAMA ================= -->
-  <div id="appSection" class="hidden flex-col min-h-screen">
+  <!-- ================= APLIKASI UTAMA ================= -->
+  <div id="appScreen" class="hidden flex-col min-h-screen">
+    
     <!-- Header Navigasi -->
-    <header class="bg-indigo-900 text-white shadow-md sticky top-0 z-30">
+    <header class="bg-indigo-900 text-white shadow-md sticky top-0 z-30 no-print">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        
+        <!-- Brand Logo -->
         <div class="flex items-center space-x-3">
           <div class="bg-indigo-600 p-2 rounded-lg text-white">
             <i class="fa-solid fa-bus text-xl"></i>
           </div>
           <div>
             <h1 class="font-bold text-lg leading-tight">Jadwal Bus Tisal 2027</h1>
-            <p class="text-xs text-indigo-200">PT. Tisal Trans Group — Live Google Sheets Sync</p>
+            <p class="text-xs text-indigo-200">PT. Tisal Trans Group — Smart Bus Manager</p>
           </div>
         </div>
-        
-        <!-- Tombol Aksi Kanan -->
-        <div class="flex items-center space-x-3">
-          <button onclick="openModalForAdd()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-2 rounded-lg text-sm font-semibold flex items-center shadow transition duration-150">
-            <i class="fa-solid fa-plus mr-2"></i> Tambah Jadwal
-          </button>
 
-          <!-- Tombol Logout -->
-          <button onclick="handleLogout()" class="bg-rose-600 hover:bg-rose-700 text-white px-3.5 py-2 rounded-lg text-sm font-semibold flex items-center shadow transition duration-150" title="Keluar dari Aplikasi">
-            <i class="fa-solid fa-right-from-bracket mr-1.5"></i> Logout
+        <!-- Tab Switcher Navigation -->
+        <div class="flex items-center bg-indigo-950 p-1 rounded-xl border border-indigo-800/60">
+          <button onclick="switchTab('jadwal')" id="btn-tab-jadwal" class="px-4 py-2 rounded-lg text-xs md:text-sm font-semibold flex items-center space-x-2 transition-all bg-indigo-600 text-white shadow">
+            <i class="fa-solid fa-calendar-days"></i>
+            <span>Jadwal Bus</span>
+          </button>
+          <button onclick="switchTab('kwitansi')" id="btn-tab-kwitansi" class="px-4 py-2 rounded-lg text-xs md:text-sm font-medium flex items-center space-x-2 transition-all text-indigo-300 hover:text-white hover:bg-indigo-900/50">
+            <i class="fa-solid fa-file-invoice-dollar"></i>
+            <span>Buat Kwitansi</span>
           </button>
         </div>
+
+        <!-- Action Button & Logout -->
+        <div class="flex items-center space-x-3">
+          <div id="header-action-jadwal">
+            <button onclick="openModalForAdd()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center shadow transition duration-150">
+              <i class="fa-solid fa-plus mr-2"></i> Tambah Jadwal
+            </button>
+          </div>
+
+          <div id="header-action-kwitansi" class="hidden">
+            <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center shadow transition duration-150">
+              <i class="fa-solid fa-print mr-2"></i> Cetak Kwitansi
+            </button>
+          </div>
+
+          <button onclick="handleLogout()" class="bg-rose-600 hover:bg-rose-500 text-white p-2 rounded-lg text-sm transition" title="Keluar / Logout">
+            <i class="fa-solid fa-right-from-bracket"></i>
+          </button>
+        </div>
+
       </div>
     </header>
 
     <!-- Konten Utama -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow w-full">
 
-      <!-- Control Panel & Filter -->
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div class="flex items-center space-x-3">
-          <label for="selectBulan" class="text-sm font-semibold text-slate-600 flex items-center">
-            <i class="fa-regular fa-calendar-days text-indigo-600 mr-2"></i> Pilih Bulan:
-          </label>
-          <select id="selectBulan" onchange="fetchData()" class="bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 p-2.5 font-medium">
-            <option value="ALL">🌟 Tampilkan Semua Bulan (2027)</option>
-            <option value="Januari" selected>Januari 2027</option>
-            <option value="Februari">Februari 2027</option>
-            <option value="Maret">Maret 2027</option>
-            <option value="April">April 2027</option>
-            <option value="Mei">Mei 2027</option>
-            <option value="Juni">Juni 2027</option>
-            <option value="Juli">Juli 2027</option>
-            <option value="Agustus">Agustus 2027</option>
-            <option value="September">September 2027</option>
-            <option value="Oktober">Oktober 2027</option>
-            <option value="November">November 2027</option>
-            <option value="Desember">Desember 2027</option>
-          </select>
+      <!-- ================= TAB 1: JADWAL BUS ================= -->
+      <section id="tab-jadwal" class="block space-y-6">
+
+        <!-- Control Panel & Filter -->
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div class="flex items-center space-x-3">
+            <label for="selectBulan" class="text-sm font-semibold text-slate-600 flex items-center">
+              <i class="fa-regular fa-calendar-days text-indigo-600 mr-2"></i> Pilih Bulan:
+            </label>
+            <select id="selectBulan" onchange="fetchData()" class="bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 p-2.5 font-medium">
+              <option value="ALL">🌟 Tampilkan Semua Bulan (2027)</option>
+              <option value="Januari" selected>Januari 2027</option>
+              <option value="Februari">Februari 2027</option>
+              <option value="Maret">Maret 2027</option>
+              <option value="April">April 2027</option>
+              <option value="Mei">Mei 2027</option>
+              <option value="Juni">Juni 2027</option>
+              <option value="Juli">Juli 2027</option>
+              <option value="Agustus">Agustus 2027</option>
+              <option value="September">September 2027</option>
+              <option value="Oktober">Oktober 2027</option>
+              <option value="November">November 2027</option>
+              <option value="Desember">Desember 2027</option>
+            </select>
+          </div>
+
+          <div class="relative w-full md:w-72">
+            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+              <i class="fa-solid fa-magnifying-glass"></i>
+            </div>
+            <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Cari bus, tujuan, agen..." class="bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-9 p-2.5">
+          </div>
         </div>
 
-        <div class="relative w-full md:w-72">
-          <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
-            <i class="fa-solid fa-magnifying-glass"></i>
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center">
+            <div class="p-3 bg-blue-100 text-blue-600 rounded-lg mr-4">
+              <i class="fa-solid fa-clipboard-list text-xl"></i>
+            </div>
+            <div>
+              <p class="text-xs text-slate-500 font-medium">Total Booking Bulan Ini</p>
+              <h3 id="statTotal" class="text-2xl font-bold text-slate-800">0</h3>
+            </div>
           </div>
-          <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Cari bus, tujuan, agen..." class="bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-9 p-2.5">
+          <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center">
+            <div class="p-3 bg-emerald-100 text-emerald-600 rounded-lg mr-4">
+              <i class="fa-solid fa-bus-simple text-xl"></i>
+            </div>
+            <div>
+              <p class="text-xs text-slate-500 font-medium">Unit Terjadwal</p>
+              <h3 id="statUnit" class="text-2xl font-bold text-slate-800">0</h3>
+            </div>
+          </div>
+          <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center">
+            <div class="p-3 bg-amber-100 text-amber-600 rounded-lg mr-4">
+              <i class="fa-solid fa-hand-holding-dollar text-xl"></i>
+            </div>
+            <div>
+              <p class="text-xs text-slate-500 font-medium">Status Data Sync</p>
+              <h3 id="statStatus" class="text-sm font-semibold text-emerald-600"><i class="fa-solid fa-circle-check"></i> Connected</h3>
+            </div>
+          </div>
         </div>
-      </div>
 
-      <!-- Stats Cards -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center">
-          <div class="p-3 bg-blue-100 text-blue-600 rounded-lg mr-4">
-            <i class="fa-solid fa-clipboard-list text-xl"></i>
-          </div>
-          <div>
-            <p class="text-xs text-slate-500 font-medium">Total Booking</p>
-            <h3 id="statTotal" class="text-2xl font-bold text-slate-800">0</h3>
+        <!-- Tabel Data -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left text-slate-600" id="jadwalTable">
+              <thead class="text-xs text-slate-700 uppercase bg-slate-50 border-b border-slate-200">
+                <tr>
+                  <th scope="col" class="px-5 py-3 text-center w-32 whitespace-nowrap">Tgl</th>
+                  <th scope="col" class="px-4 py-3">Armada Bus</th>
+                  <th scope="col" class="px-4 py-3">Tujuan Wisata</th>
+                  <th scope="col" class="px-4 py-3">Lokasi Penjemputan</th>
+                  <th scope="col" class="px-4 py-3">Harga</th>
+                  <th scope="col" class="px-4 py-3">DP</th>
+                  <th scope="col" class="px-4 py-3">Kekurangan</th>
+                  <th scope="col" class="px-4 py-3">Agen / Pemesan</th>
+                  <th scope="col" class="px-4 py-3 text-center">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody">
+                <tr>
+                  <td colspan="9" class="text-center py-8 text-slate-400">
+                    <i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i>
+                    <p>Mengambil data dari Google Sheets...</p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
-        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center">
-          <div class="p-3 bg-emerald-100 text-emerald-600 rounded-lg mr-4">
-            <i class="fa-solid fa-bus-simple text-xl"></i>
-          </div>
-          <div>
-            <p class="text-xs text-slate-500 font-medium">Unit Terjadwal</p>
-            <h3 id="statUnit" class="text-2xl font-bold text-slate-800">0</h3>
-          </div>
-        </div>
-        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center">
-          <div class="p-3 bg-amber-100 text-amber-600 rounded-lg mr-4">
-            <i class="fa-solid fa-hand-holding-dollar text-xl"></i>
-          </div>
-          <div>
-            <p class="text-xs text-slate-500 font-medium">Status Data Sync</p>
-            <h3 id="statStatus" class="text-sm font-semibold text-emerald-600"><i class="fa-solid fa-circle-check"></i> Connected</h3>
-          </div>
-        </div>
-      </div>
 
-      <!-- Tabel Data -->
-      <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm text-left text-slate-600" id="jadwalTable">
-            <thead class="text-xs text-slate-700 uppercase bg-slate-50 border-b border-slate-200">
-              <tr>
-                <th scope="col" class="px-5 py-3 text-center w-32 whitespace-nowrap">TGL</th>
-                <th scope="col" class="px-4 py-3">Armada Bus</th>
-                <th scope="col" class="px-4 py-3">Tujuan Wisata</th>
-                <th scope="col" class="px-4 py-3">Lokasi Penjemputan</th>
-                <th scope="col" class="px-4 py-3">Harga</th>
-                <th scope="col" class="px-4 py-3">DP</th>
-                <th scope="col" class="px-4 py-3">Kekurangan</th>
-                <th scope="col" class="px-4 py-3">Agen / Pemesan</th>
-                <th scope="col" class="px-4 py-3 text-center">Aksi</th>
-              </tr>
-            </thead>
-            <tbody id="tableBody">
-              <tr>
-                <td colspan="9" class="text-center py-8 text-slate-400">
-                  <i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i>
-                  <p>Mengambil data dari Google Sheets...</p>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+      </section>
+
+      <!-- ================= TAB 2: GENERATOR KWITANSI ================= -->
+      <section id="tab-kwitansi" class="hidden space-y-6">
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          
+          <!-- PANEL FORM INPUT (KIRI) -->
+          <div class="lg:col-span-5 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-5 no-print">
+            
+            <div class="border-b pb-3">
+              <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                <i class="fa-solid fa-sliders text-indigo-600"></i> Setting Template Header & Syarat
+              </h3>
+            </div>
+
+            <div class="space-y-3 text-xs">
+              <div>
+                <label class="block text-slate-600 font-semibold mb-1">Nama Perusahaan (Kop)</label>
+                <input type="text" id="in-perusahaan" value="PT. Tisal Trans Group" oninput="updatePreview()" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 font-medium">
+              </div>
+              <div>
+                <label class="block text-slate-600 font-semibold mb-1">Sub Kop / Alamat & Admin</label>
+                <textarea id="in-subkop" rows="2" oninput="updatePreview()" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">Jl. Raya Krajan - Semin (Tugu Pokah) Ngelo, Candi Rejo, Semin, Gunungkidul
+Admin1 : 0856-0194-7668 | Admin2 : 0852-8488-0002 | Office : 0896-2538-2277</textarea>
+              </div>
+              <div>
+                <label class="block text-slate-600 font-semibold mb-1">Syarat & Ketentuan (Template)</label>
+                <textarea id="in-syarat" rows="3" oninput="updatePreview()" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">1. Pembayaran DP minimal 10% dari total harga.
+2. Pelunasan maksimal Hari H saat keberangkatan.
+3. Pembatalan H-7 dikenakan denda 50% dari DP.
+4. Kehilangan barang pribadi bukan tanggung jawab kami.</textarea>
+              </div>
+              <div>
+                <label class="block text-slate-600 font-semibold mb-1">Info Rekening Transfer</label>
+                <textarea id="in-rekening" rows="2" oninput="updatePreview()" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">🏛️ BANK BRI
+No. Rek : 7477-01-022351-53-0
+A.N    : ARIF WAHYUDI</textarea>
+              </div>
+            </div>
+
+            <div class="border-b pb-2 pt-2">
+              <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                <i class="fa-solid fa-pen-to-square text-indigo-600"></i> Input Data Transaksi (Manual)
+              </h3>
+            </div>
+
+            <div class="space-y-3 text-xs">
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-slate-600 font-semibold mb-1">No. Kwitansi / INV</label>
+                  <input type="text" id="in-noinv" value="#INV/1784004606148" oninput="updatePreview()" class="w-full p-2 border rounded-lg font-mono">
+                </div>
+                <div>
+                  <label class="block text-slate-600 font-semibold mb-1">Tanggal</label>
+                  <input type="text" id="in-tgl" value="12 Oktober 2026" oninput="updatePreview()" class="w-full p-2 border rounded-lg">
+                </div>
+              </div>
+
+              <div class="p-3 bg-slate-50 rounded-xl space-y-2 border">
+                <span class="font-bold text-slate-700 block">Informasi Penyewa</span>
+                <div>
+                  <input type="text" id="in-nama" placeholder="Nama Penyewa" value="Valisa tour" oninput="updatePreview()" class="w-full p-2 border rounded-lg mb-1">
+                  <input type="text" id="in-telp" placeholder="Telepon (-)" value="-" oninput="updatePreview()" class="w-full p-2 border rounded-lg mb-1">
+                  <input type="text" id="in-alamat" placeholder="Alamat (-)" value="-" oninput="updatePreview()" class="w-full p-2 border rounded-lg">
+                </div>
+              </div>
+
+              <div class="p-3 bg-slate-50 rounded-xl space-y-2 border">
+                <span class="font-bold text-slate-700 block">Detail Perjalanan</span>
+                <div class="space-y-1">
+                  <input type="text" id="in-tujuan" placeholder="Tujuan" value="Surabaya - Batu Malang" oninput="updatePreview()" class="w-full p-2 border rounded-lg">
+                  <input type="text" id="in-armada" placeholder="Armada" value="BIG BUS + BIG BUS + BIG BUS + JB5 M" oninput="updatePreview()" class="w-full p-2 border rounded-lg">
+                  <input type="text" id="in-kursi" placeholder="Jumlah Kursi" value="44 Seat" oninput="updatePreview()" class="w-full p-2 border rounded-lg">
+                  <input type="text" id="in-fasilitas" placeholder="Fasilitas" value="Seat 50, AC, karaoke, tv, wifi, TV, Ac, Bantal dan selimut" oninput="updatePreview()" class="w-full p-2 border rounded-lg">
+                  <input type="text" id="in-penjemputan" placeholder="Penjemputan" value="Wonosari-Tepus" oninput="updatePreview()" class="w-full p-2 border rounded-lg">
+                </div>
+              </div>
+
+              <div class="p-3 bg-slate-50 rounded-xl space-y-2 border">
+                <span class="font-bold text-slate-700 block">Deskripsi Layanan & Periode</span>
+                <input type="text" id="in-deskripsi" value="Sewa Bus Pariwisata" oninput="updatePreview()" class="w-full p-2 border rounded-lg mb-1">
+                <input type="text" id="in-periode" value="Periode: 12/10/2026 s/d 15/10/2026 (4 Hari)" oninput="updatePreview()" class="w-full p-2 border rounded-lg">
+              </div>
+
+              <div class="p-3 bg-blue-50/50 rounded-xl space-y-2 border border-blue-200">
+                <span class="font-bold text-blue-900 block">Rincian Pembayaran (Rp)</span>
+                <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <label class="block text-slate-600 font-semibold mb-1">Total Biaya</label>
+                    <input type="number" id="in-total" value="44400000" oninput="updatePreview()" class="w-full p-2 border rounded-lg font-semibold text-slate-800">
+                  </div>
+                  <div>
+                    <label class="block text-slate-600 font-semibold mb-1">Uang Masuk / DP</label>
+                    <input type="number" id="in-uangmasuk" value="500000" oninput="updatePreview()" class="w-full p-2 border rounded-lg font-semibold text-emerald-600">
+                  </div>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-slate-600 font-semibold mb-1">Nama Admin</label>
+                  <input type="text" id="in-admin" value="Admin Operasional" oninput="updatePreview()" class="w-full p-2 border rounded-lg">
+                </div>
+                <div>
+                  <label class="block text-slate-600 font-semibold mb-1">Nama Customer</label>
+                  <input type="text" id="in-customer" value="Customer" oninput="updatePreview()" class="w-full p-2 border rounded-lg">
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- LIVE PREVIEW KWITANSI (KANAN) -->
+          <div class="lg:col-span-7 flex justify-center">
+            <div id="kwitansi-print-area" class="bg-white p-8 rounded-xl shadow-lg border border-slate-200 w-full max-w-[800px] text-slate-800 relative overflow-hidden text-sm">
+              
+              <!-- WATERMARK STATUS OVERLAY (Z-20 & POINTER-EVENTS-NONE) -->
+              <div id="pv-watermark" class="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-20 opacity-20 rotate-[-20deg] text-8xl font-black tracking-widest text-amber-500">
+                DP PAID
+              </div>
+
+              <!-- KOP SURAT ATAS -->
+              <div class="flex justify-between items-start border-b-4 border-blue-800 pb-3 mb-5 relative z-10">
+                <div>
+                  <h1 id="pv-perusahaan" class="text-2xl font-black text-blue-900 uppercase tracking-wide">PT. Tisal Trans Group</h1>
+                  <p id="pv-subkop" class="text-xs text-slate-500 whitespace-pre-line leading-relaxed mt-1">Jl. Raya Krajan - Semin (Tugu Pokah) Ngelo, Candi Rejo, Semin, Gunungkidul
+Admin1 : 0856-0194-7668 | Admin2 : 0852-8488-0002 | Office : 0896-2538-2277</p>
+                </div>
+                <div class="text-right">
+                  <h2 class="text-2xl font-black tracking-widest text-slate-800">KWITANSI</h2>
+                  <p id="pv-noinv" class="font-bold text-xs text-slate-700 mt-1">#INV/1784004606148</p>
+                  <p id="pv-tgl" class="text-xs text-slate-600">Tgl: 12 Oktober 2026</p>
+                </div>
+              </div>
+
+              <!-- INFORMASI PENYEWA & DETAIL PERJALANAN -->
+              <div class="grid grid-cols-12 gap-4 mb-5 text-xs relative z-10">
+                
+                <!-- INFORMASI PENYEWA -->
+                <div class="col-span-5 space-y-1">
+                  <h3 class="font-bold text-blue-900 uppercase border-b pb-1 mb-2">Informasi Penyewa</h3>
+                  <div class="grid grid-cols-12">
+                    <span class="col-span-4 text-slate-500">Nama</span>
+                    <span class="col-span-8 font-bold text-slate-800" id="pv-nama">: Valisa tour</span>
+                  </div>
+                  <div class="grid grid-cols-12">
+                    <span class="col-span-4 text-slate-500">Telepon</span>
+                    <span class="col-span-8 text-slate-800" id="pv-telp">: -</span>
+                  </div>
+                  <div class="grid grid-cols-12">
+                    <span class="col-span-4 text-slate-500">Alamat</span>
+                    <span class="col-span-8 text-slate-800" id="pv-alamat">: -</span>
+                  </div>
+                </div>
+
+                <!-- DETAIL PERJALANAN -->
+                <div class="col-span-7 space-y-1 pl-2">
+                  <h3 class="font-bold text-blue-900 uppercase border-b pb-1 mb-2">Detail Perjalanan</h3>
+                  <div class="grid grid-cols-12">
+                    <span class="col-span-4 text-slate-500">Tujuan</span>
+                    <span class="col-span-8 font-bold text-slate-800" id="pv-tujuan">: Surabaya - Batu Malang</span>
+                  </div>
+                  <div class="grid grid-cols-12">
+                    <span class="col-span-4 text-slate-500">Armada</span>
+                    <span class="col-span-8 font-bold text-slate-800 uppercase" id="pv-armada">: BIG BUS + BIG BUS + BIG BUS + JB5 M</span>
+                  </div>
+                  <div class="grid grid-cols-12">
+                    <span class="col-span-4 text-slate-500">Jumlah Kursi</span>
+                    <span class="col-span-8 text-slate-800" id="pv-kursi">: 44 Seat</span>
+                  </div>
+                  <div class="grid grid-cols-12">
+                    <span class="col-span-4 text-slate-500">Fasilitas</span>
+                    <span class="col-span-8 text-slate-800" id="pv-fasilitas">: Seat 50, AC, karaoke, tv, wifi, TV, Ac, Bantal dan selimut</span>
+                  </div>
+                  <div class="grid grid-cols-12">
+                    <span class="col-span-4 text-slate-500">Penjemputan</span>
+                    <span class="col-span-8 text-slate-800" id="pv-penjemputan">: Wonosari-Tepus</span>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- DESKRIPSI LAYANAN TABEL -->
+              <div class="mb-5 relative z-10">
+                <table class="w-full text-xs">
+                  <thead>
+                    <tr class="bg-blue-900 text-white font-bold">
+                      <th class="text-left p-2.5 rounded-l">Deskripsi Layanan</th>
+                      <th class="text-right p-2.5 rounded-r">Harga Sewa</th>
+                    </tr>
+                  </thead>
+                  <tbody class="border-b">
+                    <tr>
+                      <td class="p-3">
+                        <div id="pv-deskripsi" class="font-bold text-slate-800 text-sm">Sewa Bus Pariwisata</div>
+                        <div id="pv-periode" class="text-slate-500 mt-0.5">Periode: 12/10/2026 s/d 15/10/2026 (4 Hari)</div>
+                      </td>
+                      <td id="pv-harga-sewa" class="p-3 text-right font-bold text-slate-800 text-base align-top">
+                        Rp 44.400.000
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- SYARAT & KALKULASI TAGIHAN -->
+              <div class="grid grid-cols-12 gap-4 mb-8 relative z-10">
+                
+                <!-- SYARAT & INFO REK -->
+                <div class="col-span-7 text-xs space-y-3">
+                  <div class="border border-dashed border-slate-300 p-3 rounded-lg bg-slate-50/50">
+                    <span class="font-bold text-slate-700 block mb-1">Syarat & Ketentuan:</span>
+                    <p id="pv-syarat" class="text-slate-600 whitespace-pre-line leading-relaxed">1. Pembayaran DP minimal 10% dari total harga.
+2. Pelunasan maksimal Hari H saat keberangkatan.
+3. Pembatalan H-7 dikenakan denda 50% dari DP.
+4. Kehilangan barang pribadi bukan tanggung jawab kami.</p>
+                  </div>
+
+                  <div class="border border-blue-200 bg-blue-50/40 p-3 rounded-xl">
+                    <span class="font-bold text-blue-900 block mb-1">Informasi Pembayaran (Transfer):</span>
+                    <p id="pv-rekening" class="text-slate-700 font-medium whitespace-pre-line leading-relaxed">🏛️ BANK BRI
+No. Rek : 7477-01-022351-53-0
+A.N    : ARIF WAHYUDI</p>
+                  </div>
+                </div>
+
+                <!-- RINGKASAN BIAYA -->
+                <div class="col-span-5 bg-slate-50 border p-4 rounded-xl space-y-2 flex flex-col justify-between">
+                  <div class="space-y-1.5 text-xs">
+                    <div class="flex justify-between text-slate-600">
+                      <span>Total Biaya</span>
+                      <span id="pv-total-biaya" class="font-bold text-slate-800">Rp 44.400.000</span>
+                    </div>
+                    <div class="flex justify-between text-emerald-700 font-medium">
+                      <span>Uang Masuk</span>
+                      <span id="pv-uang-masuk" class="font-bold">Rp 500.000</span>
+                    </div>
+                    <div class="border-b border-slate-300 my-1"></div>
+                  </div>
+
+                  <div class="pt-2">
+                    <span class="text-xs font-black text-blue-900 uppercase block tracking-wider">SISA TAGIHAN</span>
+                    <span id="pv-sisa-tagihan" class="text-xl font-black text-blue-900 block mt-0.5">Rp 43.900.000</span>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- TANDA TANGAN -->
+              <div class="grid grid-cols-2 text-center text-xs pt-4 relative z-10">
+                <div>
+                  <p class="text-slate-600 mb-12">Hormat Kami,</p>
+                  <p id="pv-admin" class="font-bold text-slate-800 border-t border-slate-300 inline-block px-8 pt-1">( Admin Operasional )</p>
+                </div>
+                <div>
+                  <p class="text-slate-600 mb-12">Penyewa,</p>
+                  <p id="pv-customer" class="font-bold text-slate-800 border-t border-slate-300 inline-block px-8 pt-1">( Valisa tour )</p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
         </div>
-      </div>
+
+      </section>
+
     </main>
+
   </div>
 
   <!-- Modal Form (Tambah / Edit) -->
@@ -196,7 +515,7 @@
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Tanggal</label>
-            <input type="text" id="formTgl" required placeholder="Tgl (misal: 1 atau 18-20)" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm">
+            <input type="text" id="formTgl" required placeholder="Tgl (misal: 1 atau 3-6)" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm">
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Armada / Bus</label>
@@ -242,191 +561,214 @@
   </div>
 
   <script>
+    const PASSWORD_AKSES = "tisal_2027";
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyK6iFvXtxP8Sa8Le-xttJB_c76sLtrOoK9nJTBGdTUTupQaq1VrQDXeKQlW3oGpdSFLw/exec";
-    
-    // PASSWORD AKSES LOGIN (Bisa diganti sesuai keinginan)
-    const ADMIN_PASSWORD = "tisal_2027";
+    let rawData = [];
 
-    let rawGroupedData = [];
-    let isAllMode = false;
-
-    // --- MANAJEMEN AUTENTIKASI ---
+    // AUTENTIKASI LOGIN
     function checkAuth() {
-      const isAuth = localStorage.getItem("tisal_authenticated");
-      const loginSection = document.getElementById("loginSection");
-      const appSection = document.getElementById("appSection");
-
-      if (isAuth === "true") {
-        loginSection.classList.add("hidden");
-        appSection.classList.remove("hidden");
-        appSection.classList.add("flex");
+      const isLoggedIn = localStorage.getItem('tisal_logged_in');
+      if (isLoggedIn === 'true') {
+        document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('appScreen').classList.remove('hidden');
+        document.getElementById('appScreen').classList.add('flex');
         fetchData();
+        updatePreview();
       } else {
-        loginSection.classList.remove("hidden");
-        appSection.classList.add("hidden");
-        appSection.classList.remove("flex");
+        document.getElementById('loginScreen').classList.remove('hidden');
+        document.getElementById('appScreen').classList.add('hidden');
+        document.getElementById('appScreen').classList.remove('flex');
       }
     }
 
     function handleLogin(e) {
       e.preventDefault();
-      const inputPass = document.getElementById("loginPassword").value;
-      const errorMsg = document.getElementById("loginError");
+      const inputPass = document.getElementById('loginPassword').value;
+      const errorMsg = document.getElementById('loginError');
 
-      if (inputPass === ADMIN_PASSWORD) {
-        localStorage.setItem("tisal_authenticated", "true");
-        errorMsg.classList.add("hidden");
-        document.getElementById("loginPassword").value = "";
+      if (inputPass === PASSWORD_AKSES) {
+        localStorage.setItem('tisal_logged_in', 'true');
+        errorMsg.classList.add('hidden');
         checkAuth();
       } else {
-        errorMsg.classList.remove("hidden");
+        errorMsg.classList.remove('hidden');
       }
     }
 
     function handleLogout() {
       if (confirm("Apakah Anda yakin ingin keluar dari sistem?")) {
-        localStorage.removeItem("tisal_authenticated");
+        localStorage.removeItem('tisal_logged_in');
+        document.getElementById('loginPassword').value = '';
         checkAuth();
       }
     }
 
-    // --- FETCH DATA SHEET ---
-    async function fetchData() {
-      const bulan = document.getElementById('selectBulan').value;
-      const tbody = document.getElementById('tableBody');
-      
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="9" class="text-center py-8 text-slate-400">
-            <i class="fa-solid fa-circle-notch fa-spin text-2xl mb-2 text-indigo-600"></i>
-            <p>Memuat data jadwal...</p>
-          </td>
-        </tr>`;
+    // SWITCH TAB MENU
+    function switchTab(tabName) {
+      const tabJadwal = document.getElementById('tab-jadwal');
+      const tabKwitansi = document.getElementById('tab-kwitansi');
+      const btnJadwal = document.getElementById('btn-tab-jadwal');
+      const btnKwitansi = document.getElementById('btn-tab-kwitansi');
+      const actJadwal = document.getElementById('header-action-jadwal');
+      const actKwitansi = document.getElementById('header-action-kwitansi');
 
-      try {
-        const response = await fetch(`${SCRIPT_URL}?sheet=${encodeURIComponent(bulan)}`);
-        const result = await response.json();
+      if (tabName === 'jadwal') {
+        tabJadwal.classList.remove('hidden');
+        tabKwitansi.classList.add('hidden');
+        actJadwal.classList.remove('hidden');
+        actKwitansi.classList.add('hidden');
 
-        if (result.status === "success") {
-          isAllMode = result.isAll;
-          if (isAllMode) {
-            rawGroupedData = result.data;
-          } else {
-            rawGroupedData = [{ bulan: result.bulan, data: result.data }];
+        btnJadwal.className = "px-4 py-2 rounded-lg text-xs md:text-sm font-semibold flex items-center space-x-2 transition-all bg-indigo-600 text-white shadow";
+        btnKwitansi.className = "px-4 py-2 rounded-lg text-xs md:text-sm font-medium flex items-center space-x-2 transition-all text-indigo-300 hover:text-white hover:bg-indigo-900/50";
+      } else {
+        tabJadwal.classList.add('hidden');
+        tabKwitansi.classList.remove('hidden');
+        actJadwal.classList.add('hidden');
+        actKwitansi.classList.remove('hidden');
+
+        btnKwitansi.className = "px-4 py-2 rounded-lg text-xs md:text-sm font-semibold flex items-center space-x-2 transition-all bg-indigo-600 text-white shadow";
+        btnJadwal.className = "px-4 py-2 rounded-lg text-xs md:text-sm font-medium flex items-center space-x-2 transition-all text-indigo-300 hover:text-white hover:bg-indigo-900/50";
+      }
+    }
+
+    // JADWAL BUS LOGIC
+async function fetchData() {
+  const bulan = document.getElementById('selectBulan').value;
+  const tbody = document.getElementById('tableBody');
+  
+  tbody.innerHTML = `
+    <tr>
+      <td colspan="9" class="text-center py-8 text-slate-400">
+        <i class="fa-solid fa-circle-notch fa-spin text-2xl mb-2 text-indigo-600"></i>
+        <p>Memuat data jadwal...</p>
+      </td>
+    </tr>`;
+
+  try {
+    const response = await fetch(`${SCRIPT_URL}?sheet=${encodeURIComponent(bulan)}`);
+    const result = await response.json();
+
+    if (result.status === "success") {
+      if (result.isAll) {
+        rawData = result.data; // array grouping per bulan
+        renderTable(rawData);
+        
+        // Hitung total stat dari seluruh bulan
+        let totalCount = 0;
+        let validUnits = 0;
+        rawData.forEach(g => {
+          if (g.data) {
+            totalCount += g.data.length;
+            validUnits += g.data.filter(r => !r.bus.toLowerCase().includes('cancel')).length;
           }
-          renderTable(rawGroupedData);
-          updateStats(rawGroupedData);
-        } else {
-          tbody.innerHTML = `<tr><td colspan="9" class="text-center py-6 text-rose-500 font-medium">Gagal memuat data: ${result.message}</td></tr>`;
-        }
-      } catch (error) {
-        tbody.innerHTML = `<tr><td colspan="9" class="text-center py-6 text-rose-500 font-medium">Terjadi kesalahan koneksi ke server.</td></tr>`;
-      }
-    }
-
-    function renderTable(groupedData) {
-      const tbody = document.getElementById('tableBody');
-      tbody.innerHTML = '';
-
-      let totalRows = 0;
-
-      groupedData.forEach(group => {
-        if (!group.data || group.data.length === 0) return;
-        totalRows += group.data.length;
-
-        tbody.innerHTML += `
-          <tr class="bg-indigo-50/80 border-y border-indigo-200">
-            <td colspan="9" class="px-4 py-2.5 font-bold text-indigo-900 text-sm">
-              <i class="fa-solid fa-calendar-check mr-2 text-indigo-600"></i> Bulan: ${group.bulan} (${group.data.length} Jadwal)
-            </td>
-          </tr>
-        `;
-
-        group.data.forEach((row) => {
-          const isCancel = row.bus.toLowerCase().includes('cancel') || row.keterangan.toLowerCase().includes('cancel');
-          const trClass = isCancel ? 'bg-rose-50/60 text-slate-400' : 'hover:bg-slate-50 border-b border-slate-100';
-
-          tbody.innerHTML += `
-            <tr class="${trClass}">
-              <td class="px-5 py-3 font-semibold text-center text-indigo-900 whitespace-nowrap w-32">${row.tgl}</td>
-              <td class="px-4 py-3 font-medium text-slate-900">${row.bus}</td>
-              <td class="px-4 py-3">${row.tujuan}</td>
-              <td class="px-4 py-3">${row.jemputan}</td>
-              <td class="px-4 py-3 font-medium">${row.harga}</td>
-              <td class="px-4 py-3 text-emerald-600 font-medium">${row.dp}</td>
-              <td class="px-4 py-3 text-amber-600 font-medium">${row.kekurangan}</td>
-              <td class="px-4 py-3 text-xs text-slate-500">${row.keterangan}</td>
-              <td class="px-4 py-3 text-center">
-                <button onclick="openModalForEdit('${group.bulan}', ${row.row_id})" class="bg-amber-500 hover:bg-amber-600 text-white p-1.5 rounded-md text-xs transition" title="Edit Jadwal">
-                  <i class="fa-solid fa-pen"></i> Edit
-                </button>
-              </td>
-            </tr>
-          `;
         });
-      });
+        document.getElementById('statTotal').innerText = totalCount;
+        document.getElementById('statUnit').innerText = validUnits;
 
-      if (totalRows === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" class="text-center py-8 text-slate-400">Belum ada data jadwal untuk ditampilkan.</td></tr>`;
+      } else {
+        rawData = result.data;
+        renderTable(rawData);
+        updateStats(rawData);
       }
+    } else {
+      tbody.innerHTML = `<tr><td colspan="9" class="text-center py-6 text-rose-500 font-medium">Gagal memuat data: ${result.message}</td></tr>`;
     }
+  } catch (error) {
+    tbody.innerHTML = `<tr><td colspan="9" class="text-center py-6 text-rose-500 font-medium">Terjadi kesalahan koneksi ke server.</td></tr>`;
+  }
+}
 
-    function updateStats(groupedData) {
-      let totalBooking = 0;
-      let validUnits = 0;
 
-      groupedData.forEach(g => {
-        if (!g.data) return;
-        totalBooking += g.data.length;
-        validUnits += g.data.filter(r => !r.bus.toLowerCase().includes('cancel')).length;
-      });
+function renderTable(data) {
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = '';
 
-      document.getElementById('statTotal').innerText = totalBooking;
+  if (!data || data.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="9" class="text-center py-8 text-slate-400">Belum ada data jadwal untuk ditampilkan.</td></tr>`;
+    return;
+  }
+
+  // Jika data berbentuk Array berisikan Group Bulan (saat Tampilkan Semua Bulan)
+  if (data[0] && data[0].bulan && Array.isArray(data[0].data)) {
+    data.forEach(group => {
+      if (!group.data || group.data.length === 0) return;
+
+      tbody.innerHTML += `
+        <tr class="bg-indigo-50/80 border-y border-indigo-200">
+          <td colspan="9" class="px-4 py-2.5 font-bold text-indigo-900 text-sm">
+            <i class="fa-solid fa-calendar-check mr-2 text-indigo-600"></i> Bulan: ${group.bulan} (${group.data.length} Jadwal)
+          </td>
+        </tr>
+      `;
+
+      group.data.forEach(row => renderRowItem(tbody, row));
+    });
+  } else {
+    // Jika data 1 bulan biasa
+    data.forEach(row => renderRowItem(tbody, row));
+  }
+}
+
+// Helper untuk cetak baris tabel dengan kolom TGL yang lapang (w-32)
+function renderRowItem(tbody, row) {
+  const isCancel = row.bus.toLowerCase().includes('cancel') || row.keterangan.toLowerCase().includes('cancel');
+  const trClass = isCancel ? 'bg-rose-50/60 text-slate-400' : 'hover:bg-slate-50 border-b border-slate-100';
+
+  tbody.innerHTML += `
+    <tr class="${trClass}">
+      <td class="px-5 py-3 font-semibold text-center text-indigo-900 whitespace-nowrap w-32">${row.tgl}</td>
+      <td class="px-4 py-3 font-medium text-slate-900">${row.bus}</td>
+      <td class="px-4 py-3">${row.tujuan}</td>
+      <td class="px-4 py-3">${row.jemputan}</td>
+      <td class="px-4 py-3 font-medium">${row.harga}</td>
+      <td class="px-4 py-3 text-emerald-600 font-medium">${row.dp}</td>
+      <td class="px-4 py-3 text-amber-600 font-medium">${row.kekurangan}</td>
+      <td class="px-4 py-3 text-xs text-slate-500">${row.keterangan}</td>
+      <td class="px-4 py-3 text-center">
+        <button onclick="openModalForEdit(${row.row_id})" class="bg-amber-500 hover:bg-amber-600 text-white p-1.5 rounded-md text-xs transition" title="Edit Jadwal">
+          <i class="fa-solid fa-pen"></i> Edit
+        </button>
+      </td>
+    </tr>
+  `;
+}
+    function updateStats(data) {
+      document.getElementById('statTotal').innerText = data.length;
+      const validUnits = data.filter(r => !r.bus.toLowerCase().includes('cancel')).length;
       document.getElementById('statUnit').innerText = validUnits;
     }
 
     function filterTable() {
       const query = document.getElementById('searchInput').value.toLowerCase();
-      
-      const filteredGrouped = rawGroupedData.map(group => {
-        const matchingData = group.data.filter(item => 
-          item.bus.toLowerCase().includes(query) ||
-          item.tujuan.toLowerCase().includes(query) ||
-          item.jemputan.toLowerCase().includes(query) ||
-          item.keterangan.toLowerCase().includes(query) ||
-          item.tgl.toLowerCase().includes(query)
-        );
-        return { bulan: group.bulan, data: matchingData };
-      });
-
-      renderTable(filteredGrouped);
+      const filtered = rawData.filter(item => 
+        item.bus.toLowerCase().includes(query) ||
+        item.tujuan.toLowerCase().includes(query) ||
+        item.jemputan.toLowerCase().includes(query) ||
+        item.keterangan.toLowerCase().includes(query)
+      );
+      renderTable(filtered);
     }
 
+    // Modal Tambah
     function openModalForAdd() {
       document.getElementById('addScheduleForm').reset();
       document.getElementById('formAction').value = "add";
       document.getElementById('formRowId').value = "";
       document.getElementById('modalTitle').innerHTML = `<i class="fa-solid fa-plus mr-2"></i>Tambah Jadwal Bus`;
-      
-      const currentSelect = document.getElementById('selectBulan').value;
-      if (currentSelect !== "ALL") {
-        document.getElementById('formBulan').value = currentSelect;
-      }
-      
+      document.getElementById('formBulan').value = document.getElementById('selectBulan').value;
       document.getElementById('modalForm').classList.remove('hidden');
     }
 
-    function openModalForEdit(bulanName, rowId) {
-      const group = rawGroupedData.find(g => g.bulan === bulanName);
-      if (!group) return;
-      const item = group.data.find(r => r.row_id === rowId);
+    // Modal Edit
+    function openModalForEdit(rowId) {
+      const item = rawData.find(r => r.row_id === rowId);
       if (!item) return;
 
       document.getElementById('formAction').value = "update";
       document.getElementById('formRowId').value = item.row_id;
-      document.getElementById('modalTitle').innerHTML = `<i class="fa-solid fa-pen-to-square mr-2"></i>Edit Jadwal (${bulanName} - Baris ${item.row_id})`;
+      document.getElementById('modalTitle').innerHTML = `<i class="fa-solid fa-pen-to-square mr-2"></i>Edit Jadwal Bus (Baris ${item.row_id})`;
       
-      document.getElementById('formBulan').value = bulanName.split(" ")[0];
+      document.getElementById('formBulan').value = document.getElementById('selectBulan').value;
       document.getElementById('formTgl').value = item.tgl;
       document.getElementById('formBus').value = item.bus;
       document.getElementById('formTujuan').value = item.tujuan;
@@ -444,52 +786,118 @@
       document.getElementById('addScheduleForm').reset();
     }
 
-    async function submitData(e) {
-      e.preventDefault();
-      const btn = document.getElementById('btnSubmit');
-      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> Menyimpan...`;
-      btn.disabled = true;
+async function submitData(e) {
+  e.preventDefault();
+  const btn = document.getElementById('btnSubmit');
+  btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> Menyimpan...`;
+  btn.disabled = true;
 
-      const targetBulan = document.getElementById('formBulan').value;
+  const targetBulan = document.getElementById('formBulan').value;
 
-      const payload = {
-        action: document.getElementById('formAction').value,
-        row_id: document.getElementById('formRowId').value,
-        bulan: targetBulan,
-        tgl: document.getElementById('formTgl').value,
-        bus: document.getElementById('formBus').value,
-        tujuan: document.getElementById('formTujuan').value,
-        jemputan: document.getElementById('formJemputan').value,
-        harga: document.getElementById('formHarga').value,
-        dp: document.getElementById('formDp').value,
-        kekurangan: document.getElementById('formKekurangan').value,
-        keterangan: document.getElementById('formKeterangan').value
-      };
+  const payload = {
+    action: document.getElementById('formAction').value,
+    row_id: document.getElementById('formRowId').value,
+    bulan: targetBulan,
+    tgl: document.getElementById('formTgl').value,
+    bus: document.getElementById('formBus').value,
+    tujuan: document.getElementById('formTujuan').value,
+    jemputan: document.getElementById('formJemputan').value,
+    harga: document.getElementById('formHarga').value,
+    dp: document.getElementById('formDp').value,
+    kekurangan: document.getElementById('formKekurangan').value,
+    keterangan: document.getElementById('formKeterangan').value
+  };
 
-      try {
-        await fetch(SCRIPT_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'text/plain' },
-          body: JSON.stringify(payload)
-        });
+  try {
+    // Kirim JSON payload dengan mode no-cors agar diterima oleh Google Apps Script
+    await fetch(SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 
+        'Content-Type': 'text/plain;charset=utf-8' 
+      },
+      body: JSON.stringify(payload)
+    });
 
-        alert("Berhasil menyimpan perubahan ke Google Sheets!");
-        closeModal();
+    alert("Berhasil menyimpan perubahan ke Google Sheets!");
+    closeModal();
 
-        setTimeout(() => {
-          fetchData();
-        }, 1500);
+    // Set dropdown bulan sesuai bulan inputan
+    document.getElementById('selectBulan').value = targetBulan;
 
-      } catch (err) {
-        alert("Gagal menyimpan data. Silakan coba lagi.");
-      } finally {
-        btn.innerHTML = `<span>Simpan</span>`;
-        btn.disabled = false;
-      }
+    // Beri jeda 1.5 detik agar Google Sheets selesai menulis row baru, lalu reload data
+    setTimeout(() => {
+      fetchData();
+    }, 1500);
+
+  } catch (err) {
+    alert("Terjadi kesalahan koneksi saat mengirim data.");
+  } finally {
+    btn.innerHTML = `<span>Simpan</span>`;
+    btn.disabled = false;
+  }
+}
+    // GENERATOR KWITANSI LOGIC
+    function formatRupiah(val) {
+      const number = parseFloat(val) || 0;
+      return "Rp " + number.toLocaleString('id-ID');
     }
 
-    // Inisialisasi saat pertama dibuka
+    function updatePreview() {
+      // Kop & Template
+      document.getElementById('pv-perusahaan').innerText = document.getElementById('in-perusahaan').value;
+      document.getElementById('pv-subkop').innerText = document.getElementById('in-subkop').value;
+      document.getElementById('pv-syarat').innerText = document.getElementById('in-syarat').value;
+      document.getElementById('pv-rekening').innerText = document.getElementById('in-rekening').value;
+
+      // Inv & Tgl
+      document.getElementById('pv-noinv').innerText = document.getElementById('in-noinv').value;
+      document.getElementById('pv-tgl').innerText = "Tgl: " + document.getElementById('in-tgl').value;
+
+      // Penyewa
+      document.getElementById('pv-nama').innerText = ": " + document.getElementById('in-nama').value;
+      document.getElementById('pv-telp').innerText = ": " + document.getElementById('in-telp').value;
+      document.getElementById('pv-alamat').innerText = ": " + document.getElementById('in-alamat').value;
+
+      // Perjalanan
+      document.getElementById('pv-tujuan').innerText = ": " + document.getElementById('in-tujuan').value;
+      document.getElementById('pv-armada').innerText = ": " + document.getElementById('in-armada').value;
+      document.getElementById('pv-kursi').innerText = ": " + document.getElementById('in-kursi').value;
+      document.getElementById('pv-fasilitas').innerText = ": " + document.getElementById('in-fasilitas').value;
+      document.getElementById('pv-penjemputan').innerText = ": " + document.getElementById('in-penjemputan').value;
+
+      // Layanan
+      document.getElementById('pv-deskripsi').innerText = document.getElementById('in-deskripsi').value;
+      document.getElementById('pv-periode').innerText = document.getElementById('in-periode').value;
+
+      // Rincian Biaya & Hitung Otomatis
+      const total = parseFloat(document.getElementById('in-total').value) || 0;
+      const uangMasuk = parseFloat(document.getElementById('in-uangmasuk').value) || 0;
+      const sisa = total - uangMasuk;
+
+      document.getElementById('pv-harga-sewa').innerText = formatRupiah(total);
+      document.getElementById('pv-total-biaya').innerText = formatRupiah(total);
+      document.getElementById('pv-uang-masuk').innerText = formatRupiah(uangMasuk);
+      document.getElementById('pv-sisa-tagihan').innerText = formatRupiah(sisa);
+
+      // Watermark Logic (Fix Overlay Z-20)
+      const watermark = document.getElementById('pv-watermark');
+      if (sisa <= 0 && total > 0) {
+        watermark.innerText = "PAID / LUNAS";
+        watermark.className = "absolute inset-0 flex items-center justify-center pointer-events-none select-none z-20 opacity-20 rotate-[-20deg] text-8xl font-black tracking-widest text-emerald-600";
+      } else if (uangMasuk > 0) {
+        watermark.innerText = "DP PAID";
+        watermark.className = "absolute inset-0 flex items-center justify-center pointer-events-none select-none z-20 opacity-20 rotate-[-20deg] text-8xl font-black tracking-widest text-amber-500";
+      } else {
+        watermark.innerText = "UNPAID";
+        watermark.className = "absolute inset-0 flex items-center justify-center pointer-events-none select-none z-20 opacity-20 rotate-[-20deg] text-8xl font-black tracking-widest text-red-600";
+      }
+
+      // Tanda Tangan
+      document.getElementById('pv-admin').innerText = "( " + document.getElementById('in-admin').value + " )";
+      document.getElementById('pv-customer').innerText = "( " + document.getElementById('in-customer').value + " )";
+    }
+
     window.onload = () => {
       checkAuth();
     };
